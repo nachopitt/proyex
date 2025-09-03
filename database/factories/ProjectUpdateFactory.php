@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\Status;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +20,11 @@ class ProjectUpdateFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'description' => fake()->text(),
+            'status' => fake()->numberBetween(Status::PLANNED->value, Status::CANCELLED->value),
+            'progress_percentage' => fake()->numberBetween(0, 100),
+            'project_id' => Project::all()->random()->id,
+            'updater_id' => User::all()->random()->id,
         ];
     }
 }

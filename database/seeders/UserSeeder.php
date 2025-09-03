@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Enums\Role;
 use App\Models\User;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
+use App\Models\UserProfile;
+use App\Models\UserRole;
 
 class UserSeeder extends Seeder
 {
@@ -17,34 +16,19 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = [
-            [
+        User::factory()
+            ->has(UserProfile::factory()->count(1)->state([
+                'first_name' => 'Ignacio',
+                'last_name' => 'Zamora',
+                'active' => 1,
+            ]))
+            ->has(UserRole::factory()->count(1)->state([
+                'role' => Role::ADMIN->value,
+            ]))
+            ->create([
                 'name' => 'nachopitt',
                 'email' => 'nachopitt@gmail.com',
                 'password' => Hash::make('coronado'),
-                'userProfile' => [
-                    'first_name' => 'Ignacio',
-                    'last_name' => 'Zamora',
-                    'active' => 1,
-                ],
-                'userRoles' => [
-                    [
-                        'role' => Role::ADMIN
-                    ]
-                ]
-            ],
-        ];
-
-        foreach ($users as $user) {
-            DB::transaction(function () use ($user) {
-                $newUser = User::create(Arr::except($user, ['userProfile', 'userRoles']));
-
-                $newUser->userProfile()->create($user['userProfile']);
-
-                foreach ($user['userRoles'] as $userRole) {
-                    $newUser->userRoles()->create($userRole);
-                }
-            });
-        }
+            ]);
     }
 }
