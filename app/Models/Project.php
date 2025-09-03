@@ -17,6 +17,23 @@ class Project extends Model
     use SoftDeletes;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'title',
+        'description',
+        'priority',
+        'start_date',
+        'due_date',
+        'end_date',
+        'parent_id',
+        'reporter_id',
+        'owner_id',
+    ];
+
+    /**
      * Get the project updates associated with the project.
      */
     public function projectUpdates(): HasMany

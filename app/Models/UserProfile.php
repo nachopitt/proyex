@@ -16,6 +16,7 @@ class UserProfile extends Model
         'first_name',
         'last_name',
         'active',
+        'user_id',
     ];
 
     /**

@@ -15,6 +15,15 @@ class Tag extends Model
     use SoftDeletes;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'name',
+    ];
+
+    /**
      * Get the projects associated with the tag.
      */
     public function projects(): BelongsToMany

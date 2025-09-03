@@ -15,6 +15,19 @@ class ProjectUpdate extends Model
     use SoftDeletes;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'description',
+        'status',
+        'progress_percentage',
+        'project_id',
+        'updater_id',
+    ];
+
+    /**
      * Get the project associated with the project update.
      */
     public function project(): BelongsTo
