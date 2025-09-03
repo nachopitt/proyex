@@ -63,4 +63,28 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserRole::class);
     }
+
+    /**
+     * Get the reported projects associated with the user.
+     */
+    public function reportedProjects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'reporter_id');
+    }
+
+    /**
+     * Get the owned projects associated with the user.
+     */
+    public function ownedProjects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'owner_id');
+    }
+
+    /**
+     * Get the project updates associated with the user.
+     */
+    public function projectUpdates(): HasMany
+    {
+        return $this->hasMany(ProjectUpdate::class, 'updater_id');
+    }
 }
