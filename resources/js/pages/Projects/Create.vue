@@ -17,6 +17,13 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { store } from '@/routes/projects';
+import { Priority } from '@/types'
+
+interface Props {
+  priorities: Priority;
+}
+
+const props = defineProps<Props>();
 
 const form = useForm({
     title: '',
@@ -25,12 +32,6 @@ const form = useForm({
     start_date: '',
     due_date: '',
 })
-
-const priorities = [
-    { id: 1, name: 'Low' },
-    { id: 2, name: 'Medium' },
-    { id: 3, name: 'High' },
-]
 
 function submit() {
     form.post(store().url)

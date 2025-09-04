@@ -56,3 +56,8 @@ export interface Project {
     owner: User;
     project_updates: ProjectUpdate[],
 }
+
+export interface Priority {
+    id: number;
+    name: string;
+}
