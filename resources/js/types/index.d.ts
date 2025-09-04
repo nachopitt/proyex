@@ -40,7 +40,10 @@ export interface Project {
     id: number;
     title: string;
     description: string;
-    status: string; // Assuming status is a string for now, can be refined to an enum later
-    priority: string; // Assuming priority is a string for now, can be refined to an enum later
-    // Add other properties as needed based on your Project model
+    priority: number;
+    start_date: string;
+    due_date: string;
+    end_date: string;
+    reporter: User;
+    owner: User;
 }

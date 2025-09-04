@@ -29,8 +29,12 @@ const props = defineProps<Props>();
                         <li v-for="project in projects.data" :key="project.id" class="p-4 border rounded-md">
                             <h4 class="text-md font-semibold">{{ project.title }}</h4>
                             <p class="text-sm text-gray-600">{{ project.description }}</p>
-                            <p class="text-xs text-gray-500">Status: {{ project.status }}</p>
                             <p class="text-xs text-gray-500">Priority: {{ project.priority }}</p>
+                            <p class="text-xs text-gray-500">Start date: {{ project.start_date }}</p>
+                            <p class="text-xs text-gray-500">Due date: {{ project.due_date }}</p>
+                            <p class="text-xs text-gray-500">End date: {{ project.end_date }}</p>
+                            <p class="text-xs text-gray-500">Reporter: {{ project.reporter.name }}</p>
+                            <p class="text-xs text-gray-500">Owner: {{ project.owner.name }}</p>
                         </li>
                     </ul>
                     <!-- Basic Pagination Links (you'll need to style these) -->
