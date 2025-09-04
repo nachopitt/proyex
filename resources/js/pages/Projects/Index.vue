@@ -1,7 +1,20 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Project } from '@/types';
+import { BreadcrumbItem, Project } from '@/types';
+import { index } from '@/routes/projects';
+import { dashboard } from '@/routes';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Dashboard',
+        href: dashboard().url,
+    },
+    {
+        title: 'Projects',
+        href: index().url,
+    },
+];
 
 interface Props {
     projects: {
@@ -16,15 +29,12 @@ const props = defineProps<Props>();
 <template>
     <Head title="Projects" />
 
-    <AppLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Projects</h2>
-        </template>
+    <AppLayout :breadcrumbs="breadcrumbs">
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Project List</h3>
+                    <h3 class="text-lg font-medium text-gray-900">Projects</h3>
                     <ul class="mt-4 space-y-2">
                         <li v-for="project in projects.data" :key="project.id" class="p-4 border rounded-md">
                             <h4 class="text-md font-semibold">{{ project.title }}</h4>
