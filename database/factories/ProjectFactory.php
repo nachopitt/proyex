@@ -19,7 +19,7 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->name(),
+            'title' => fake()->sentence(),
             'description' => fake()->text(),
             'priority' => fake()->numberBetween(Priority::LOW->value, Priority::HIGH->value),
             'start_date' => fake()->date(),
