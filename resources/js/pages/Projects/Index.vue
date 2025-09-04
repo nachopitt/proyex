@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, Project } from '@/types';
-import { index, show } from '@/routes/projects';
+import { index, show, create } from '@/routes/projects';
 import { dashboard } from '@/routes';
+import { Button } from '@/components/ui/button'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,7 +34,12 @@ const props = defineProps<Props>();
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">Projects</h2>
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">Projects</h2>
+                        <Link :href="create().url">
+                            <Button>Create Project</Button>
+                        </Link>
+                    </div>
                     <ul class="mt-6 space-y-2">
                         <li v-for="project in projects.data" :key="project.id" class="p-4 border rounded-md">
                             <h4 class="text-md font-semibold">
