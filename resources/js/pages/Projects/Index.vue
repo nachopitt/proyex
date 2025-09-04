@@ -2,7 +2,7 @@
 import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, Project } from '@/types';
-import { index } from '@/routes/projects';
+import { index, show } from '@/routes/projects';
 import { dashboard } from '@/routes';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -30,14 +30,17 @@ const props = defineProps<Props>();
     <Head title="Projects" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Projects</h3>
-                    <ul class="mt-4 space-y-2">
+                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">Projects</h2>
+                    <ul class="mt-6 space-y-2">
                         <li v-for="project in projects.data" :key="project.id" class="p-4 border rounded-md">
-                            <h4 class="text-md font-semibold">{{ project.title }}</h4>
+                            <h4 class="text-md font-semibold">
+                                <a :href="show(project.id).url" class="text-gray-900">
+                                    {{ project.title }}
+                                </a>
+                            </h4>
                             <p class="text-sm text-gray-600">{{ project.description }}</p>
                             <p class="text-xs text-gray-500">Priority: {{ project.priority }}</p>
                             <p class="text-xs text-gray-500">Start date: {{ project.start_date }}</p>
