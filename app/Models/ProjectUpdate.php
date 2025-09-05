@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Status;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +42,15 @@ class ProjectUpdate extends Model
     }
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'status_label',
+    ];
+
+    /**
      * Get the project associated with the project update.
      */
     public function project(): BelongsTo
@@ -54,5 +64,17 @@ class ProjectUpdate extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the project update's status label.
+     */
+    protected function statusLabel(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->status instanceof Status
+                ? $this->status->getLabel()
+                : Status::from($this->status)->getLabel(),
+        );
     }
 }

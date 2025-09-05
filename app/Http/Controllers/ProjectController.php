@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Priority;
+use App\Enums\Status;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;

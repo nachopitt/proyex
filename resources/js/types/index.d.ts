@@ -38,10 +38,11 @@ export type BreadcrumbItemType = BreadcrumbItem;
 
 export interface ProjectUpdate {
     id: number;
-    description: string,
-    status: number,
-    progress_percentage: number,
-    updater: User,
+    description: string;
+    status: number;
+    status_label: string;
+    progress_percentage: number;
+    updater: User;
 }
 
 export interface Project {
@@ -55,7 +56,7 @@ export interface Project {
     end_date: string;
     reporter: User;
     owner: User;
-    project_updates: ProjectUpdate[],
+    project_updates: ProjectUpdate[];
 }
 
 export interface Priority {

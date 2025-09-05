@@ -54,12 +54,27 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
 
             <div class="mt-4">
-              <h3 class="text-lg font-medium text-gray-900">Reporter</h3>
+              <h3 class="text-lg font-medium text-gray-900">Start date</h3>
+              <p class="mt-1 text-sm text-gray-600">{{ props.project.start_date }}</p>
+            </div>
+
+            <div class="mt-4">
+              <h3 class="text-lg font-medium text-gray-900">Due date</h3>
+              <p class="mt-1 text-sm text-gray-600">{{ props.project.due_date }}</p>
+            </div>
+
+            <div class="mt-4">
+              <h3 class="text-lg font-medium text-gray-900">End date</h3>
+              <p class="mt-1 text-sm text-gray-600">{{ props.project.end_date }}</p>
+            </div>
+
+            <div class="mt-4">
+              <h3 class="text-lg font-medium text-gray-900">Reported by</h3>
               <p class="mt-1 text-sm text-gray-600">{{ props.project.reporter.name }}</p>
             </div>
 
             <div class="mt-4">
-              <h3 class="text-lg font-medium text-gray-900">Owner</h3>
+              <h3 class="text-lg font-medium text-gray-900">Owned by</h3>
               <p class="mt-1 text-sm text-gray-600">{{ props.project.owner.name }}</p>
             </div>
 
@@ -68,7 +83,9 @@ const breadcrumbs: BreadcrumbItem[] = [
               <ul class="mt-1 space-y-4">
                 <li v-for="update in props.project.project_updates" :key="update.id" class="bg-gray-50 p-4 rounded-lg shadow">
                   <p class="text-base text-gray-800">{{ update.description }}</p>
-                  <p class="text-xs text-gray-500 mt-2">Updated by: {{ update.updater.name }}</p>
+                  <p class="text-sm text-gray-500 mt-2">Status: {{ update.status_label }}</p>
+                  <p class="text-sm text-gray-500 mt-2">Progress: {{ update.progress_percentage }}</p>
+                  <p class="text-sm text-gray-500 mt-2">Updated by: {{ update.updater.name }}</p>
                 </li>
               </ul>
             </div>
