@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { index, show, edit } from '@/routes/projects';
+import { create as createUpdate } from '@/routes/projects/updates';
 import { BreadcrumbItem, Project } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
@@ -37,9 +38,14 @@ const breadcrumbs: BreadcrumbItem[] = [
             <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">
               {{ props.project.title }}
             </h2>
-            <Link :href="edit(props.project.id).url">
-              <Button>Edit Project</Button>
-            </Link>
+            <div class="flex items-center gap-4">
+              <Link :href="createUpdate(props.project.id).url">
+                <Button>Create Project Update</Button>
+              </Link>
+              <Link :href="edit(props.project.id).url">
+                <Button>Edit Project</Button>
+              </Link>
+            </div>
           </div>
 
           <div class="mt-6 space-y-2">

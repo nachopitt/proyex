@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Http\Requests\StoreProjectUpdateRequest;
 use App\Http\Requests\UpdateProjectUpdateRequest;
 use App\Models\Project;
@@ -27,7 +28,8 @@ class ProjectUpdateController extends Controller
     public function create(Project $project)
     {
         return Inertia::render('Projects/Update/Create', [
-            'project' => $project
+            'project' => $project,
+            'statuses' => Status::asArray(),
         ]);
     }
 
@@ -40,7 +42,7 @@ class ProjectUpdateController extends Controller
 
         $project->projectUpdates()->create($validated + ['updater_id' => auth()->id()]);
 
-        return redirect()->route('projects.updates.index', $project);
+        return redirect()->route('projects.show', $project);
     }
 
     /**
@@ -71,7 +73,7 @@ class ProjectUpdateController extends Controller
 
         $update->update($validated);
 
-        return redirect()->route('projects.updates.index', $project);
+        return redirect()->route('projects.show', $project);
     }
 
     /**
@@ -81,6 +83,6 @@ class ProjectUpdateController extends Controller
     {
         $update->delete();
 
-        return redirect()->route('projects.updates.index', $project);
+        return redirect()->route('projects.show', $project);
     }
 }
