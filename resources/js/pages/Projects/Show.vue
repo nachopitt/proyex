@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { index, show, edit } from '@/routes/projects';
 import { create as createUpdate } from '@/routes/projects/updates';
+import { edit as editUpdate } from '@/routes/updates';
 import { BreadcrumbItem, Project } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
@@ -88,10 +89,17 @@ const breadcrumbs: BreadcrumbItem[] = [
               <h3 class="text-lg font-medium text-gray-900">Project Updates</h3>
               <ul class="mt-1 space-y-4">
                 <li v-for="update in props.project.project_updates" :key="update.id" class="bg-gray-50 p-4 rounded-lg shadow">
-                  <p class="text-base text-gray-800">{{ update.description }}</p>
-                  <p class="text-sm text-gray-500 mt-2">Status: {{ update.status_label }}</p>
-                  <p class="text-sm text-gray-500 mt-2">Progress: {{ update.progress_percentage }}</p>
-                  <p class="text-sm text-gray-500 mt-2">Updated by: {{ update.updater.name }}</p>
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <p class="text-base text-gray-800">{{ update.description }}</p>
+                      <p class="text-sm text-gray-500 mt-2">Status: {{ update.status_label }}</p>
+                      <p class="text-sm text-gray-500 mt-2">Progress: {{ update.progress_percentage }}</p>
+                      <p class="text-sm text-gray-500 mt-2">Updated by: {{ update.updater.name }}</p>
+                    </div>
+                    <Link :href="editUpdate(update.id).url">
+                      <Button variant="outline" size="sm">Edit</Button>
+                    </Link>
+                  </div>
                 </li>
               </ul>
             </div>
