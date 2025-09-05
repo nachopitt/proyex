@@ -43,12 +43,12 @@ const props = defineProps<Props>();
                     <ul class="mt-6 space-y-2">
                         <li v-for="project in projects.data" :key="project.id" class="p-4 border rounded-md">
                             <h4 class="text-md font-semibold">
-                                <a :href="show(project.id).url" class="text-gray-900">
+                                <Link :href="show(project.id).url" class="text-gray-900">
                                     {{ project.title }}
-                                </a>
+                                </Link>
                             </h4>
                             <p class="text-sm text-gray-600">{{ project.description }}</p>
-                            <p class="text-xs text-gray-500">Priority: {{ project.priority }}</p>
+                            <p class="text-xs text-gray-500">Priority: {{ project.priority_label }}</p>
                             <p class="text-xs text-gray-500">Start date: {{ project.start_date }}</p>
                             <p class="text-xs text-gray-500">Due date: {{ project.due_date }}</p>
                             <p class="text-xs text-gray-500">End date: {{ project.end_date }}</p>

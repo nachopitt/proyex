@@ -16,12 +16,13 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { index, create, store } from '@/routes/projects';
-import { BreadcrumbItem, Priority } from '@/types'
+import { index, show, edit, update } from '@/routes/projects';
+import { BreadcrumbItem, Priority, Project } from '@/types'
 import { dashboard } from '@/routes'
 
 interface Props {
-  priorities: Priority[];
+    project: Project;
+    priorities: Priority[];
 }
 
 const props = defineProps<Props>();
@@ -36,21 +37,25 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: 'Create Project',
-        href: create().url,
+        title: props.project.title.slice(0, 20) + "...",
+        href: show(props.project.id).url,
+    },
+    {
+        title: 'Edit Project',
+        href: edit(props.project.id).url,
     },
 ];
 
 const form = useForm({
-    title: '',
-    description: '',
-    priority: '2',
-    start_date: '',
-    due_date: '',
+    title: props.project.title,
+    description: props.project.description,
+    priority: String(props.project.priority),
+    start_date: props.project.start_date,
+    due_date: props.project.due_date,
 })
 
 function submit() {
-    form.post(store().url)
+    form.put(update(props.project.id).url)
 }
 </script>
 
@@ -58,7 +63,7 @@ function submit() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container px-4 sm:px-8">
             <div class="py-8">
-                <Heading :title="'Create Project'" />
+                <Heading :title="'Edit Project'" />
             </div>
 
             <form @submit.prevent="submit" class="mt-6 space-y-6">
@@ -130,7 +135,7 @@ function submit() {
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <Button :disabled="form.processing">Create</Button>
+                    <Button :disabled="form.processing">Update</Button>
                 </div>
             </form>
         </div>

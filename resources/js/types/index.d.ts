@@ -49,6 +49,7 @@ export interface Project {
     title: string;
     description: string;
     priority: number;
+    priority_label: string;
     start_date: string;
     due_date: string;
     end_date: string;

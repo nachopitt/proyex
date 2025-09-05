@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Priority;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +46,15 @@ class Project extends Model
             'priority' => Priority::class,
         ];
     }
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'priority_label',
+    ];
 
     /**
      * Get the project updates associated with the project.
@@ -92,5 +102,17 @@ class Project extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class)->withTimestamps();
+    }
+
+    /**
+     * Get the project's priority label.
+     */
+    protected function priorityLabel(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->priority instanceof Priority
+                ? $this->priority->getLabel()
+                : Priority::from($this->priority)->getLabel(),
+        );
     }
 }

@@ -71,6 +71,7 @@ class ProjectController extends Controller
     {
         return Inertia::render('Projects/Edit', [
             'project' => $project,
+            'priorities' => Priority::asArray(),
         ]);
     }
 
