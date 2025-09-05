@@ -56,12 +56,13 @@ function submit() {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container px-4 sm:px-8">
-            <div class="py-8">
+        <div class="container px-4 py-6 sm:px-8">
+            <div class="mb-8 space-y-0.5">
                 <Heading :title="'Create Project'" />
             </div>
-
-            <form @submit.prevent="submit" class="mt-6 space-y-6">
+            <div class="max-w-xl space-y-12">
+                <div class="flex flex-col space-y-6">
+                    <form @submit.prevent="submit" class="space-y-6">
                 <div>
                     <Label for="title">Title</Label>
                     <Input
@@ -129,10 +130,12 @@ function submit() {
                     <InputError class="mt-2" :message="form.errors.due_date" />
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <Button :disabled="form.processing">Create</Button>
+                        <div class="flex items-center gap-4">
+                            <Button :disabled="form.processing">Create</Button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </AppLayout>
 </template>
