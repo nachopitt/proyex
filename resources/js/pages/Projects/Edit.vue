@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { index, show, edit, update } from '@/routes/projects';
 import { BreadcrumbItem, Priority, Project } from '@/types'
 import { dashboard } from '@/routes'
+import DeleteProject from '@/components/DeleteProject.vue'
 
 interface Props {
     project: Project;
@@ -61,83 +62,87 @@ function submit() {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container px-4 sm:px-8">
-            <div class="py-8">
+        <div class="container px-4 py-6 sm:px-8">
+            <div class="mb-8 space-y-0.5">
                 <Heading :title="'Edit Project'" />
             </div>
+            <div class="max-w-xl space-y-12">
+                <div class="flex flex-col space-y-6">
+                    <form @submit.prevent="submit" class="space-y-6">
+                        <div>
+                            <Label for="title">Title</Label>
+                            <Input
+                                id="title"
+                                type="text"
+                                class="mt-1 block w-full"
+                                v-model="form.title"
+                                required
+                                autofocus
+                            />
+                            <InputError class="mt-2" :message="form.errors.title" />
+                        </div>
 
-            <form @submit.prevent="submit" class="mt-6 space-y-6">
-                <div>
-                    <Label for="title">Title</Label>
-                    <Input
-                        id="title"
-                        type="text"
-                        class="mt-1 block w-full"
-                        v-model="form.title"
-                        required
-                        autofocus
-                    />
-                    <InputError class="mt-2" :message="form.errors.title" />
-                </div>
+                        <div>
+                            <Label for="description">Description</Label>
+                            <Textarea
+                                id="description"
+                                class="mt-1 block w-full"
+                                v-model="form.description"
+                            />
+                            <InputError class="mt-2" :message="form.errors.description" />
+                        </div>
 
-                <div>
-                    <Label for="description">Description</Label>
-                    <Textarea
-                        id="description"
-                        class="mt-1 block w-full"
-                        v-model="form.description"
-                    />
-                    <InputError class="mt-2" :message="form.errors.description" />
-                </div>
+                        <div>
+                            <Label for="priority">Priority</Label>
+                            <Select v-model="form.priority">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Priorities</SelectLabel>
+                                        <SelectItem
+                                            v-for="priority in priorities"
+                                            :key="priority.id"
+                                            :value="String(priority.id)"
+                                        >
+                                            {{ priority.name }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError class="mt-2" :message="form.errors.priority" />
+                        </div>
 
-                <div>
-                    <Label for="priority">Priority</Label>
-                    <Select v-model="form.priority">
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a priority" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectLabel>Priorities</SelectLabel>
-                                <SelectItem
-                                    v-for="priority in priorities"
-                                    :key="priority.id"
-                                    :value="String(priority.id)"
-                                >
-                                    {{ priority.name }}
-                                </SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <InputError class="mt-2" :message="form.errors.priority" />
-                </div>
+                        <div>
+                            <Label for="start_date">Start Date</Label>
+                            <Input
+                                id="start_date"
+                                type="date"
+                                class="mt-1 block w-full"
+                                v-model="form.start_date"
+                            />
+                            <InputError class="mt-2" :message="form.errors.start_date" />
+                        </div>
 
-                <div>
-                    <Label for="start_date">Start Date</Label>
-                    <Input
-                        id="start_date"
-                        type="date"
-                        class="mt-1 block w-full"
-                        v-model="form.start_date"
-                    />
-                    <InputError class="mt-2" :message="form.errors.start_date" />
-                </div>
+                        <div>
+                            <Label for="due_date">Due Date</Label>
+                            <Input
+                                id="due_date"
+                                type="date"
+                                class="mt-1 block w-full"
+                                v-model="form.due_date"
+                            />
+                            <InputError class="mt-2" :message="form.errors.due_date" />
+                        </div>
 
-                <div>
-                    <Label for="due_date">Due Date</Label>
-                    <Input
-                        id="due_date"
-                        type="date"
-                        class="mt-1 block w-full"
-                        v-model="form.due_date"
-                    />
-                    <InputError class="mt-2" :message="form.errors.due_date" />
+                        <div class="flex items-center gap-4">
+                            <Button :disabled="form.processing">Update</Button>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="flex items-center gap-4">
-                    <Button :disabled="form.processing">Update</Button>
-                </div>
-            </form>
+                <DeleteProject :project="project" />
+            </div>
         </div>
     </AppLayout>
 </template>
