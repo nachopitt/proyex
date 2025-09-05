@@ -96,7 +96,7 @@ function submit() {
                             <SelectGroup>
                                 <SelectLabel>Priorities</SelectLabel>
                                 <SelectItem
-                                    v-for="priority in priorities"
+                                    v-for="priority in props.priorities"
                                     :key="priority.id"
                                     :value="String(priority.id)"
                                 >

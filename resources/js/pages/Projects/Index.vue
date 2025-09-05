@@ -33,25 +33,25 @@ const props = defineProps<Props>();
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
+                <div class="overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-6">Projects</h2>
+                        <h2 class="text-2xl font-bold mb-4 mt-6">Projects</h2>
                         <Link :href="create().url">
                             <Button>Create Project</Button>
                         </Link>
                     </div>
 
-                    <div v-if="projects.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                        <div v-for="project in projects.data" :key="project.id" class="border rounded-lg p-4 flex flex-col justify-between">
+                    <div v-if="props.projects.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                        <div v-for="project in props.projects.data" :key="project.id" class="border rounded-lg p-4 bg-gray-50 dark:bg-[#161615] flex flex-col justify-between">
                             <div>
                                 <h4 class="text-md font-semibold">
-                                    <Link :href="show(project.id).url" class="text-gray-900">
+                                    <Link :href="show(project.id).url">
                                         {{ project.title }}
                                     </Link>
                                 </h4>
-                                <p class="text-sm text-gray-600 mt-2">{{ project.description }}</p>
+                                <p class="text-sm text-muted-foreground mt-2">{{ project.description }}</p>
                             </div>
-                            <div class="mt-4 text-xs text-gray-500 space-y-1">
+                            <div class="mt-4 text-xs text-muted-foreground space-y-1">
                                 <p>Priority: {{ project.priority_label }}</p>
                                 <p>Start date: {{ project.start_date }}</p>
                                 <p>Due date: {{ project.due_date }}</p>
@@ -63,8 +63,8 @@ const props = defineProps<Props>();
                     </div>
 
                     <div v-else class="text-center py-12">
-                        <h3 class="text-lg font-medium text-gray-900">No projects yet</h3>
-                        <p class="text-sm text-gray-600">Create one to get started!</p>
+                        <h3 class="text-lg font-medium">No projects yet</h3>
+                        <p class="text-sm text-muted-foreground">Create one to get started!</p>
                         <Link :href="create().url" class="mt-4 inline-block">
                             <Button>Create Project</Button>
                         </Link>
@@ -72,14 +72,14 @@ const props = defineProps<Props>();
 
                     <div class="mt-4 flex justify-center">
                         <div class="flex space-x-1">
-                            <template v-for="(link, index) in projects.links" :key="index">
+                            <template v-for="(link, index) in props.projects.links" :key="index">
                                 <Link
                                     v-if="link.url"
                                     :href="link.url"
                                     :class="[
                                         'px-3 py-1 border rounded-md',
-                                        { 'font-bold bg-gray-200': link.active },
-                                        { 'hover:bg-gray-100': link.url },
+                                        { 'font-bold bg-gray-50 dark:bg-[#161615]': link.active },
+                                        { 'hover:bg-gray-50 dark:bg-[#161615]': link.url },
                                     ]"
                                 >
                                     <span v-html="link.label"></span>
@@ -87,7 +87,7 @@ const props = defineProps<Props>();
                                 <span
                                     v-else
                                     v-html="link.label"
-                                    class="px-3 py-1 border rounded-md text-gray-400 cursor-not-allowed"
+                                    class="px-3 py-1 border rounded-md cursor-not-allowed"
                                 />
                             </template>
                         </div>
