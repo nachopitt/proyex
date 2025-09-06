@@ -43,6 +43,7 @@ export interface ProjectUpdate {
     status_label: string;
     progress_percentage: number;
     updater: User;
+    project: Project;
 }
 
 export interface Project {

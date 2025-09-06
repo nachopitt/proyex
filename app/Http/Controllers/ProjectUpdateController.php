@@ -56,33 +56,35 @@ class ProjectUpdateController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Project $project, ProjectUpdate $update)
+    public function edit(ProjectUpdate $update)
     {
+        $update->load(['project']);
+
         return Inertia::render('Projects/Update/Edit', [
-            'project' => $project,
-            'update' => $update,
+            'projectUpdate' => $update,
+            'statuses' => Status::asArray(),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProjectUpdateRequest $request, Project $project, ProjectUpdate $update)
+    public function update(UpdateProjectUpdateRequest $request, ProjectUpdate $update)
     {
         $validated = $request->validated();
 
         $update->update($validated);
 
-        return redirect()->route('projects.show', $project);
+        return redirect()->route('projects.show', $update->project_id);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Project $project, ProjectUpdate $update)
+    public function destroy(ProjectUpdate $update)
     {
         $update->delete();
 
-        return redirect()->route('projects.show', $project);
+        return redirect()->route('projects.show', $update->project_id);
     }
 }

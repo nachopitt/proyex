@@ -18,11 +18,11 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { index, show } from '@/routes/projects';
 import { edit as editUpdate, update as updateUpdate } from '@/routes/updates';
-import { BreadcrumbItem, Project, ProjectUpdate, Status } from '@/types'
+import { BreadcrumbItem, ProjectUpdate, Status } from '@/types'
 import { dashboard } from '@/routes'
+import DeleteProjectUpdate from '@/components/DeleteProjectUpdate.vue'
 
 interface Props {
-    project: Project;
     projectUpdate: ProjectUpdate;
     statuses: Status[];
 }
@@ -39,8 +39,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: props.project.title.slice(0, 20) + "...",
-        href: show(props.project.id).url,
+        title: props.projectUpdate.project.title.slice(0, 20) + "...",
+        href: show(props.projectUpdate.project.id).url,
     },
     {
         title: 'Edit Project Update',
@@ -55,7 +55,7 @@ const form = useForm({
 })
 
 function submit() {
-    form.post(updateUpdate(props.projectUpdate.id).url)
+    form.put(updateUpdate(props.projectUpdate.id).url)
 }
 </script>
 
@@ -63,7 +63,7 @@ function submit() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container px-4 py-6 sm:px-8">
             <div class="mb-8 space-y-0.5">
-                <Heading :title="'Create Project Update'" />
+                <Heading :title="'Edit Project Update'" />
             </div>
             <div class="max-w-xl space-y-12">
                 <div class="flex flex-col space-y-6">
@@ -118,6 +118,7 @@ function submit() {
                         </div>
                     </form>
                 </div>
+                <DeleteProjectUpdate :project-update="projectUpdate"/>
             </div>
         </div>
     </AppLayout>
