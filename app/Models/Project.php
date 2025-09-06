@@ -32,7 +32,7 @@ class Project extends Model
         'end_date',
         'parent_id',
         'reporter_id',
-        'owner_id',
+        'assigned_id',
     ];
 
     /**
@@ -89,9 +89,9 @@ class Project extends Model
     }
 
     /**
-     * Get the owner user associated with the project.
+     * Get the assigned user associated with the project.
      */
-    public function owner(): BelongsTo
+    public function assigned(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

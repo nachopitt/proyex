@@ -56,7 +56,7 @@ export interface Project {
     due_date: string;
     end_date: string;
     reporter: User;
-    owner: User;
+    assigned: User;
     project_updates: ProjectUpdate[];
 }
 

@@ -81,8 +81,8 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
 
             <div class="mt-4">
-              <h3 class="text-lg font-medium">Owned by</h3>
-              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.owner.name }}</p>
+              <h3 class="text-lg font-medium">Assigned to</h3>
+              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned.name }}</p>
             </div>
 
             <div class="mt-4">
