@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Priority;
-use App\Enums\Status;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
-use Illuminate\Http\Response;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -21,7 +19,7 @@ class ProjectController extends Controller
             ->with(['reporter', 'owner'])
             ->paginate(10);
 
-        return Inertia::render('Projects/Index', [
+        return Inertia::render('projects/Index', [
             'projects' => $projects,
         ]);
     }
@@ -31,7 +29,7 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Projects/Create', [
+        return Inertia::render('projects/Create', [
             'priorities' => Priority::asArray(),
         ]);
     }
@@ -60,7 +58,7 @@ class ProjectController extends Controller
     {
         $project->load(['tags', 'reporter', 'owner', 'projectUpdates.updater']);
 
-        return Inertia::render('Projects/Show', [
+        return Inertia::render('projects/Show', [
             'project' => $project,
         ]);
     }
@@ -70,7 +68,7 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        return Inertia::render('Projects/Edit', [
+        return Inertia::render('projects/Edit', [
             'project' => $project,
             'priorities' => Priority::asArray(),
         ]);

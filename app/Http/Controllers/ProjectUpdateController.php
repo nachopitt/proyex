@@ -16,10 +16,7 @@ class ProjectUpdateController extends Controller
      */
     public function index(Project $project)
     {
-        return Inertia::render('Projects/Update/Index', [
-            'project' => $project,
-            'updates' => $project->projectUpdates()->latest()->paginate(10),
-        ]);
+        // TODO: do something with this
     }
 
     /**
@@ -27,7 +24,7 @@ class ProjectUpdateController extends Controller
      */
     public function create(Project $project)
     {
-        return Inertia::render('Projects/Update/Create', [
+        return Inertia::render('projects/updates/Create', [
             'project' => $project,
             'statuses' => Status::asArray(),
         ]);
@@ -60,7 +57,7 @@ class ProjectUpdateController extends Controller
     {
         $update->load(['project']);
 
-        return Inertia::render('Projects/Update/Edit', [
+        return Inertia::render('projects/updates/Edit', [
             'projectUpdate' => $update,
             'statuses' => Status::asArray(),
         ]);
