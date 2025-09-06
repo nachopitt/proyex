@@ -79,7 +79,7 @@ const props = defineProps<Props>();
                                     :class="[
                                         'px-3 py-1 border rounded-md',
                                         { 'font-bold bg-gray-50 dark:bg-[#161615]': link.active },
-                                        { 'hover:bg-gray-50 dark:bg-[#161615]': link.url },
+                                        { 'hover:bg-gray-50 hover:dark:bg-[#161615]': link.url },
                                     ]"
                                 >
                                     <span v-html="link.label"></span>
