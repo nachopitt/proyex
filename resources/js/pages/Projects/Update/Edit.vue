@@ -81,7 +81,7 @@ function submit() {
                         <div>
                             <Label for="status">Status</Label>
                             <Select v-model="form.status">
-                                <SelectTrigger>
+                                <SelectTrigger class="mt-1">
                                     <SelectValue placeholder="Select a status" />
                                 </SelectTrigger>
                                 <SelectContent>

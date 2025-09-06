@@ -95,7 +95,7 @@ function submit() {
                         <div>
                             <Label for="priority">Priority</Label>
                             <Select v-model="form.priority">
-                                <SelectTrigger>
+                                <SelectTrigger class="mt-1">
                                     <SelectValue placeholder="Select a priority" />
                                 </SelectTrigger>
                                 <SelectContent>
