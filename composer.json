@@ -22,7 +22,7 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nachopitt/db-commands": "^0.3.1",
-        "nachopitt/migrations": "^0.5.3",
+        "nachopitt/migrations": "^0.5.4",
         "nunomaduro/collision": "^8.6",
         "phpunit/phpunit": "^11.5.3"
     },
