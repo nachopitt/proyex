@@ -17,13 +17,14 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, show, edit, update } from '@/routes/projects';
-import { BreadcrumbItem, Priority, Project } from '@/types'
+import { BreadcrumbItem, Priority, Project, User } from '@/types'
 import { dashboard } from '@/routes'
 import DeleteProject from '@/components/DeleteProject.vue'
 
 interface Props {
     project: Project;
     priorities: Priority[];
+    users: User[];
 }
 
 const props = defineProps<Props>();
@@ -51,6 +52,7 @@ const form = useForm({
     title: props.project.title,
     description: props.project.description,
     priority: String(props.project.priority),
+    assigned_id: String(props.project.assigned_id),
     start_date: props.project.start_date,
     due_date: props.project.due_date,
 })
@@ -107,6 +109,28 @@ function submit() {
                                             :value="String(priority.id)"
                                         >
                                             {{ priority.name }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError class="mt-2" :message="form.errors.priority" />
+                        </div>
+
+                        <div>
+                            <Label for="assigned_id">Assigned to</Label>
+                            <Select v-model="form.assigned_id">
+                                <SelectTrigger class="mt-1">
+                                    <SelectValue placeholder="Select a user" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Users</SelectLabel>
+                                        <SelectItem
+                                            v-for="user in props.users"
+                                            :key="user.id"
+                                            :value="String(user.id)"
+                                        >
+                                            {{ user.name }}
                                         </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>

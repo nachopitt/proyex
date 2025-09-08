@@ -6,6 +6,7 @@ use App\Enums\Priority;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use App\Models\User;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -31,6 +32,7 @@ class ProjectController extends Controller
     {
         return Inertia::render('projects/Create', [
             'priorities' => Priority::asArray(),
+            'users' => User::all(['id', 'name']),
         ]);
     }
 
@@ -71,6 +73,7 @@ class ProjectController extends Controller
         return Inertia::render('projects/Edit', [
             'project' => $project,
             'priorities' => Priority::asArray(),
+            'users' => User::all(['id', 'name']),
         ]);
     }
 

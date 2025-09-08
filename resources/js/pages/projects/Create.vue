@@ -17,11 +17,12 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, create, store } from '@/routes/projects';
-import { BreadcrumbItem, Priority } from '@/types'
+import { BreadcrumbItem, Priority, User } from '@/types'
 import { dashboard } from '@/routes'
 
 interface Props {
   priorities: Priority[];
+  users: User[];
 }
 
 const props = defineProps<Props>();
@@ -45,6 +46,7 @@ const form = useForm({
     title: '',
     description: '',
     priority: '2',
+    assigned_id: '',
     start_date: '',
     due_date: '',
 })
@@ -101,6 +103,28 @@ function submit() {
                                     :value="String(priority.id)"
                                 >
                                     {{ priority.name }}
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    <InputError class="mt-2" :message="form.errors.priority" />
+                </div>
+
+                <div>
+                    <Label for="assigned_id">Assigned to</Label>
+                    <Select v-model="form.assigned_id">
+                        <SelectTrigger class="mt-1">
+                            <SelectValue placeholder="Select a user" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Users</SelectLabel>
+                                <SelectItem
+                                    v-for="user in props.users"
+                                    :key="user.id"
+                                    :value="String(user.id)"
+                                >
+                                    {{ user.name }}
                                 </SelectItem>
                             </SelectGroup>
                         </SelectContent>
