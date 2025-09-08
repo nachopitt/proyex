@@ -13,161 +13,141 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('project_tag', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->bigInteger('project_id')
-                ->unsigned();
-            $table->bigInteger('tag_id')
-                ->unsigned();
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
-            $table->index('project_id', 'fk_project_tag_projects1_idx');
-            $table->index('tag_id', 'fk_project_tag_tags1_idx');
-            $table->foreign('project_id', 'fk_project_tag_projects1')
-                ->references('id')
-                ->on('projects')->onDelete('no action')->onUpdate('no action');
-            $table->foreign('tag_id', 'fk_project_tag_tags1')
-                ->references('id')
-                ->on('tags')->onDelete('no action')->onUpdate('no action');
-        });
-
-        Schema::create('project_updates', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->text('description');
-            $table->integer('status');
-            $table->tinyInteger('progress_percentage');
-            $table->bigInteger('project_id')
-                ->unsigned();
-            $table->bigInteger('updater_id')
-                ->unsigned();
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
-            $table->timestamp('deleted_at')
-                ->nullable();
-            $table->index('project_id', 'fk_project_updates_projects1_idx');
-            $table->index('updater_id', 'fk_project_updates_users1_idx');
-            $table->foreign('project_id', 'fk_project_updates_projects1')
-                ->references('id')
-                ->on('projects')->onDelete('no action')->onUpdate('no action');
-            $table->foreign('updater_id', 'fk_project_updates_users1')
-                ->references('id')
-                ->on('users')->onDelete('no action')->onUpdate('no action');
-        });
-
-        Schema::create('projects', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->string('title', 255);
-            $table->text('description')
-                ->nullable();
-            $table->integer('priority');
-            $table->date('start_date')
-                ->nullable();
-            $table->date('due_date')
-                ->nullable();
-            $table->date('end_date')
-                ->nullable();
-            $table->bigInteger('parent_id')
-                ->unsigned()
-                ->nullable();
-            $table->bigInteger('reporter_id')
-                ->unsigned();
-            $table->bigInteger('assigned_id')
-                ->unsigned();
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
-            $table->timestamp('deleted_at')
-                ->nullable();
-            $table->index('parent_id', 'fk_projects_projects1_idx');
-            $table->index('reporter_id', 'fk_projects_users1_idx');
-            $table->index('assigned_id', 'fk_projects_users2_idx');
-            $table->foreign('parent_id', 'fk_projects_projects1')
-                ->references('id')
-                ->on('projects')->onDelete('no action')->onUpdate('no action');
-            $table->foreign('reporter_id', 'fk_projects_users1')
-                ->references('id')
-                ->on('users')->onDelete('no action')->onUpdate('no action');
-            $table->foreign('assigned_id', 'fk_projects_users2')
-                ->references('id')
-                ->on('users')->onDelete('no action')->onUpdate('no action');
-        });
-
-        Schema::create('tags', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->string('name', 255);
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
-            $table->timestamp('deleted_at')
-                ->nullable();
-        });
-
-        Schema::create('user_profiles', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->string('first_name', 255);
-            $table->string('last_name', 255);
-            $table->tinyInteger('active');
-            $table->bigInteger('user_id')
-                ->unsigned();
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
-            $table->index('user_id', 'fk_user_profiles_users1_idx');
-            $table->foreign('user_id', 'fk_user_profiles_users1')
-                ->references('id')
-                ->on('users')->onDelete('no action')->onUpdate('no action');
-        });
-
-        Schema::create('user_roles', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->integer('role')
-                ->unsigned();
-            $table->bigInteger('user_id')
-                ->unsigned();
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
-            $table->index('user_id', 'fk_user_roles_users1_idx');
-            $table->foreign('user_id', 'fk_user_roles_users1')
-                ->references('id')
-                ->on('users')->onDelete('no action')->onUpdate('no action');
-        });
-
-        Schema::create('users', function (Blueprint $table) {
-            $table->bigInteger('id')
-                ->unsigned()
-                ->autoIncrement();
-            $table->string('name', 255);
-            $table->string('email', 255);
-            $table->timestamp('email_verified_at')
-                ->nullable();
-            $table->string('password', 255);
-            $table->string('remember_token', 100)
-                ->nullable();
-            $table->timestamp('created_at')
-                ->nullable();
-            $table->timestamp('updated_at')
-                ->nullable();
+        Schema::withoutForeignKeyConstraints(function () {
+            Schema::create('project_tag', function (Blueprint $table) {
+                $table->bigInteger('id')
+                    ->unsigned()
+                    ->autoIncrement();
+                $table->bigInteger('project_id')
+                    ->unsigned();
+                $table->bigInteger('tag_id')
+                    ->unsigned();
+                $table->timestamp('created_at')
+                    ->nullable();
+                $table->timestamp('updated_at')
+                    ->nullable();
+                $table->index('project_id', 'fk_project_tag_projects1_idx');
+                $table->index('tag_id', 'fk_project_tag_tags1_idx');
+                $table->foreign('project_id', 'fk_project_tag_projects1')
+                    ->references('id')
+                    ->on('projects')->onDelete('no action')->onUpdate('no action');
+                $table->foreign('tag_id', 'fk_project_tag_tags1')
+                    ->references('id')
+                    ->on('tags')->onDelete('no action')->onUpdate('no action');
+            });
+            Schema::create('project_updates', function (Blueprint $table) {
+                $table->bigInteger('id')
+                    ->unsigned()
+                    ->autoIncrement();
+                $table->text('description');
+                $table->integer('status');
+                $table->tinyInteger('progress_percentage');
+                $table->bigInteger('project_id')
+                    ->unsigned();
+                $table->bigInteger('updater_id')
+                    ->unsigned();
+                $table->timestamp('created_at')
+                    ->nullable();
+                $table->timestamp('updated_at')
+                    ->nullable();
+                $table->timestamp('deleted_at')
+                    ->nullable();
+                $table->index('project_id', 'fk_project_updates_projects1_idx');
+                $table->index('updater_id', 'fk_project_updates_users1_idx');
+                $table->foreign('project_id', 'fk_project_updates_projects1')
+                    ->references('id')
+                    ->on('projects')->onDelete('no action')->onUpdate('no action');
+                $table->foreign('updater_id', 'fk_project_updates_users1')
+                    ->references('id')
+                    ->on('users')->onDelete('no action')->onUpdate('no action');
+            });
+            Schema::create('projects', function (Blueprint $table) {
+                $table->bigInteger('id')
+                    ->unsigned()
+                    ->autoIncrement();
+                $table->string('title', 255);
+                $table->text('description')
+                    ->nullable();
+                $table->integer('priority');
+                $table->date('start_date')
+                    ->nullable();
+                $table->date('due_date')
+                    ->nullable();
+                $table->date('end_date')
+                    ->nullable();
+                $table->bigInteger('parent_id')
+                    ->unsigned()
+                    ->nullable();
+                $table->bigInteger('reporter_id')
+                    ->unsigned();
+                $table->bigInteger('assigned_id')
+                    ->unsigned();
+                $table->timestamp('created_at')
+                    ->nullable();
+                $table->timestamp('updated_at')
+                    ->nullable();
+                $table->timestamp('deleted_at')
+                    ->nullable();
+                $table->index('parent_id', 'fk_projects_projects1_idx');
+                $table->index('reporter_id', 'fk_projects_users1_idx');
+                $table->index('assigned_id', 'fk_projects_users2_idx');
+                $table->foreign('parent_id', 'fk_projects_projects1')
+                    ->references('id')
+                    ->on('projects')->onDelete('no action')->onUpdate('no action');
+                $table->foreign('reporter_id', 'fk_projects_users1')
+                    ->references('id')
+                    ->on('users')->onDelete('no action')->onUpdate('no action');
+                $table->foreign('assigned_id', 'fk_projects_users2')
+                    ->references('id')
+                    ->on('users')->onDelete('no action')->onUpdate('no action');
+            });
+            Schema::create('tags', function (Blueprint $table) {
+                $table->bigInteger('id')
+                    ->unsigned()
+                    ->autoIncrement();
+                $table->string('name', 255);
+                $table->timestamp('created_at')
+                    ->nullable();
+                $table->timestamp('updated_at')
+                    ->nullable();
+                $table->timestamp('deleted_at')
+                    ->nullable();
+            });
+            Schema::create('user_profiles', function (Blueprint $table) {
+                $table->bigInteger('id')
+                    ->unsigned()
+                    ->autoIncrement();
+                $table->string('first_name', 255);
+                $table->string('last_name', 255);
+                $table->tinyInteger('active');
+                $table->bigInteger('user_id')
+                    ->unsigned();
+                $table->timestamp('created_at')
+                    ->nullable();
+                $table->timestamp('updated_at')
+                    ->nullable();
+                $table->index('user_id', 'fk_user_profiles_users1_idx');
+                $table->foreign('user_id', 'fk_user_profiles_users1')
+                    ->references('id')
+                    ->on('users')->onDelete('no action')->onUpdate('no action');
+            });
+            Schema::create('user_roles', function (Blueprint $table) {
+                $table->bigInteger('id')
+                    ->unsigned()
+                    ->autoIncrement();
+                $table->integer('role')
+                    ->unsigned();
+                $table->bigInteger('user_id')
+                    ->unsigned();
+                $table->timestamp('created_at')
+                    ->nullable();
+                $table->timestamp('updated_at')
+                    ->nullable();
+                $table->index('user_id', 'fk_user_roles_users1_idx');
+                $table->foreign('user_id', 'fk_user_roles_users1')
+                    ->references('id')
+                    ->on('users')->onDelete('no action')->onUpdate('no action');
+            });
         });
     }
 
@@ -178,18 +158,13 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('project_tag');
-
-        Schema::dropIfExists('project_updates');
-
-        Schema::dropIfExists('projects');
-
-        Schema::dropIfExists('tags');
-
-        Schema::dropIfExists('user_profiles');
-
-        Schema::dropIfExists('user_roles');
-
-        Schema::dropIfExists('users');
+        Schema::withoutForeignKeyConstraints(function () {
+            Schema::dropIfExists('project_tag');
+            Schema::dropIfExists('project_updates');
+            Schema::dropIfExists('projects');
+            Schema::dropIfExists('tags');
+            Schema::dropIfExists('user_profiles');
+            Schema::dropIfExists('user_roles');
+        });
     }
 };
