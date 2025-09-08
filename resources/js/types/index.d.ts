@@ -42,7 +42,7 @@ export interface ProjectUpdate {
     status: number;
     status_label: string;
     progress_percentage: number;
-    updater: User;
+    updater_user: User;
     project: Project;
 }
 
@@ -55,9 +55,9 @@ export interface Project {
     start_date: string;
     due_date: string;
     end_date: string;
-    reporter: User;
-    assigned: User;
-    assigned_id: number;
+    reporter_user: User;
+    assigned_user: User;
+    assigned_user_id: number;
     project_updates: ProjectUpdate[];
 }
 

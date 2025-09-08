@@ -31,8 +31,8 @@ class Project extends Model
         'due_date',
         'end_date',
         'parent_id',
-        'reporter_id',
-        'assigned_id',
+        'reporter_user_id',
+        'assigned_user_id',
     ];
 
     /**
@@ -83,7 +83,7 @@ class Project extends Model
     /**
      * Get the reporter user associated with the project.
      */
-    public function reporter(): BelongsTo
+    public function reporterUser(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -91,7 +91,7 @@ class Project extends Model
     /**
      * Get the assigned user associated with the project.
      */
-    public function assigned(): BelongsTo
+    public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

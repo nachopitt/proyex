@@ -79,8 +79,8 @@ const props = defineProps<Props>();
                                 <p>Start date: {{ project.start_date }}</p>
                                 <p>Due date: {{ project.due_date }}</p>
                                 <p>End date: {{ project.end_date }}</p>
-                                <p>Reported by: {{ project.reporter.name }}</p>
-                                <p>Assigned to: {{ project.assigned.name }}</p>
+                                <p>Reported by: {{ project.reporter_user.name }}</p>
+                                <p>Assigned to: {{ project.assigned_user.name }}</p>
                             </div>
                         </div>
                     </div>

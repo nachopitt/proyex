@@ -26,7 +26,7 @@ class ProjectUpdate extends Model
         'status',
         'progress_percentage',
         'project_id',
-        'updater_id',
+        'updater_user_id',
     ];
 
     /**
@@ -61,7 +61,7 @@ class ProjectUpdate extends Model
     /**
      * Get the updater user associated with the project update.
      */
-    public function updater(): BelongsTo
+    public function updaterUser(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

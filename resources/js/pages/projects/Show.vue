@@ -77,12 +77,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <div class="mt-4">
               <h3 class="text-lg font-medium">Reported by</h3>
-              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.reporter.name }}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.reporter_user.name }}</p>
             </div>
 
             <div class="mt-4">
               <h3 class="text-lg font-medium">Assigned to</h3>
-              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned.name }}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned_user.name }}</p>
             </div>
 
             <div class="mt-4">
@@ -94,7 +94,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                       <p class="text-base">{{ update.description }}</p>
                       <p class="text-sm text-muted-foreground mt-2">Status: {{ update.status_label }}</p>
                       <p class="text-sm text-muted-foreground mt-2">Progress: {{ update.progress_percentage }}</p>
-                      <p class="text-sm text-muted-foreground mt-2">Updated by: {{ update.updater.name }}</p>
+                      <p class="text-sm text-muted-foreground mt-2">Updated by: {{ update.updater_user.name }}</p>
                     </div>
                     <Link :href="editUpdate(update.id).url">
                       <Button variant="outline" size="sm">Edit</Button>

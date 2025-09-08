@@ -17,7 +17,7 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::latest()
-            ->with(['reporter', 'assigned'])
+            ->with(['reporterUser', 'assignedUser'])
             ->paginate(10);
 
         return Inertia::render('projects/Index', [
@@ -42,10 +42,10 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         $validated = $request->validated();
-        $validated['reporter_id'] = auth()->id();
+        $validated['reporter_user_id'] = auth()->id();
 
-        if (empty($validated['assigned_id'])) {
-            $validated['assigned_id'] = auth()->id();
+        if (empty($validated['assigned_user_id'])) {
+            $validated['assigned_user_id'] = auth()->id();
         }
 
         $project = Project::create($validated);
@@ -58,7 +58,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load(['tags', 'reporter', 'assigned', 'projectUpdates.updater']);
+        $project->load(['tags', 'reporterUser', 'assignedUser', 'projectUpdates.updaterUser']);
 
         return Inertia::render('projects/Show', [
             'project' => $project,

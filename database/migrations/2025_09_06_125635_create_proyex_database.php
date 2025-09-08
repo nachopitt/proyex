@@ -44,7 +44,7 @@ return new class extends Migration
                 $table->tinyInteger('progress_percentage');
                 $table->bigInteger('project_id')
                     ->unsigned();
-                $table->bigInteger('updater_id')
+                $table->bigInteger('updater_user_id')
                     ->unsigned();
                 $table->timestamp('created_at')
                     ->nullable();
@@ -53,11 +53,11 @@ return new class extends Migration
                 $table->timestamp('deleted_at')
                     ->nullable();
                 $table->index('project_id', 'fk_project_updates_projects1_idx');
-                $table->index('updater_id', 'fk_project_updates_users1_idx');
+                $table->index('updater_user_id', 'fk_project_updates_users1_idx');
                 $table->foreign('project_id', 'fk_project_updates_projects1')
                     ->references('id')
                     ->on('projects')->onDelete('no action')->onUpdate('no action');
-                $table->foreign('updater_id', 'fk_project_updates_users1')
+                $table->foreign('updater_user_id', 'fk_project_updates_users1')
                     ->references('id')
                     ->on('users')->onDelete('no action')->onUpdate('no action');
             });
@@ -78,9 +78,9 @@ return new class extends Migration
                 $table->bigInteger('parent_id')
                     ->unsigned()
                     ->nullable();
-                $table->bigInteger('reporter_id')
+                $table->bigInteger('reporter_user_id')
                     ->unsigned();
-                $table->bigInteger('assigned_id')
+                $table->bigInteger('assigned_user_id')
                     ->unsigned();
                 $table->timestamp('created_at')
                     ->nullable();
@@ -89,15 +89,15 @@ return new class extends Migration
                 $table->timestamp('deleted_at')
                     ->nullable();
                 $table->index('parent_id', 'fk_projects_projects1_idx');
-                $table->index('reporter_id', 'fk_projects_users1_idx');
-                $table->index('assigned_id', 'fk_projects_users2_idx');
+                $table->index('reporter_user_id', 'fk_projects_users1_idx');
+                $table->index('assigned_user_id', 'fk_projects_users2_idx');
                 $table->foreign('parent_id', 'fk_projects_projects1')
                     ->references('id')
                     ->on('projects')->onDelete('no action')->onUpdate('no action');
-                $table->foreign('reporter_id', 'fk_projects_users1')
+                $table->foreign('reporter_user_id', 'fk_projects_users1')
                     ->references('id')
                     ->on('users')->onDelete('no action')->onUpdate('no action');
-                $table->foreign('assigned_id', 'fk_projects_users2')
+                $table->foreign('assigned_user_id', 'fk_projects_users2')
                     ->references('id')
                     ->on('users')->onDelete('no action')->onUpdate('no action');
             });

@@ -26,8 +26,8 @@ class ProjectFactory extends Factory
             'due_date' => fake()->date(),
             'end_date' => fake()->date(),
             'parent_id' => null,
-            'reporter_id' => User::all()->random()->id,
-            'assigned_id' => User::all()->random()->id,
+            'reporter_user_id' => User::all()->random()->id,
+            'assigned_user_id' => User::all()->random()->id,
         ];
     }
 }

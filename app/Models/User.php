@@ -69,7 +69,7 @@ class User extends Authenticatable
      */
     public function reportedProjects(): HasMany
     {
-        return $this->hasMany(Project::class, 'reporter_id');
+        return $this->hasMany(Project::class, 'reporter_user_id');
     }
 
     /**
@@ -77,7 +77,7 @@ class User extends Authenticatable
      */
     public function assignedProjects(): HasMany
     {
-        return $this->hasMany(Project::class, 'assigned_id');
+        return $this->hasMany(Project::class, 'assigned_user_id');
     }
 
     /**
@@ -85,6 +85,6 @@ class User extends Authenticatable
      */
     public function projectUpdates(): HasMany
     {
-        return $this->hasMany(ProjectUpdate::class, 'updater_id');
+        return $this->hasMany(ProjectUpdate::class, 'updater_user_id');
     }
 }

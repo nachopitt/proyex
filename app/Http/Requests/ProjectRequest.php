@@ -32,7 +32,7 @@ class ProjectRequest extends FormRequest
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:due_date'],
             'parent_id' => ['nullable', 'exists:projects,id'],
-            'assigned_id' => ['nullable', 'exists:users,id'],
+            'assigned_user_id' => ['nullable', 'exists:users,id'],
         ];
     }
 }

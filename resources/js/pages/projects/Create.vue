@@ -46,7 +46,7 @@ const form = useForm({
     title: '',
     description: '',
     priority: '2',
-    assigned_id: '',
+    assigned_user_id: '',
     start_date: '',
     due_date: '',
 })
@@ -111,8 +111,8 @@ function submit() {
                 </div>
 
                 <div>
-                    <Label for="assigned_id">Assigned to</Label>
-                    <Select v-model="form.assigned_id">
+                    <Label for="assigned_user_id">Assigned to</Label>
+                    <Select v-model="form.assigned_user_id">
                         <SelectTrigger class="mt-1">
                             <SelectValue placeholder="Select a user" />
                         </SelectTrigger>
