@@ -41,6 +41,29 @@ const props = defineProps<Props>();
                         </Link>
                     </div>
 
+                    <div class="mt-4 flex justify-center">
+                        <div class="flex space-x-1">
+                            <template v-for="(link, index) in props.projects.links" :key="index">
+                                <Link
+                                    v-if="link.url"
+                                    :href="link.url"
+                                    :class="[
+                                        'px-3 py-1 border rounded-md',
+                                        { 'font-bold bg-gray-50 dark:bg-[#161615]': link.active },
+                                        { 'hover:bg-gray-50 hover:dark:bg-[#161615]': link.url },
+                                    ]"
+                                >
+                                    <span v-html="link.label"></span>
+                                </Link>
+                                <span
+                                    v-else
+                                    v-html="link.label"
+                                    class="px-3 py-1 border rounded-md cursor-not-allowed"
+                                />
+                            </template>
+                        </div>
+                    </div>
+
                     <div v-if="props.projects.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                         <div v-for="project in props.projects.data" :key="project.id" class="border rounded-lg p-4 bg-gray-50 dark:bg-[#161615] flex flex-col justify-between">
                             <div>
