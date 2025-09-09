@@ -18,7 +18,7 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::latest()
-            ->with(['reporterUser', 'assignedUser'])
+            ->with(['reporterUser', 'assignedUser', 'tags'])
             ->paginate(10);
 
         return Inertia::render('projects/Index', [

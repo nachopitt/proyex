@@ -56,6 +56,15 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
 
             <div class="mt-4">
+              <h3 class="text-lg font-medium">Tags</h3>
+              <div v-if="project.tags && project.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+                <span v-for="tag in project.tags" :key="tag.id" class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                  {{ tag.name }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4">
               <h3 class="text-lg font-medium">Priority</h3>
               <p class="mt-1 text-sm text-muted-foreground">{{ props.project.priority_label }}</p>
             </div>

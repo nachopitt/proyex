@@ -74,6 +74,13 @@ const props = defineProps<Props>();
                                 </h4>
                                 <p class="text-sm text-muted-foreground mt-2">{{ project.description }}</p>
                             </div>
+
+                            <div v-if="project.tags && project.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+                                <span v-for="tag in project.tags" :key="tag.id" class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                    {{ tag.name }}
+                                </span>
+                            </div>
+
                             <div class="mt-4 text-xs text-muted-foreground space-y-1">
                                 <p>Priority: {{ project.priority_label }}</p>
                                 <p>Start date: {{ project.start_date }}</p>
