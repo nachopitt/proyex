@@ -81,7 +81,8 @@ return new class extends Migration
                 $table->bigInteger('reporter_user_id')
                     ->unsigned();
                 $table->bigInteger('assigned_user_id')
-                    ->unsigned();
+                    ->unsigned()
+                    ->nullable();
                 $table->timestamp('created_at')
                     ->nullable();
                 $table->timestamp('updated_at')
