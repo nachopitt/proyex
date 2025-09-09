@@ -44,11 +44,6 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         $validated = $request->validated();
-        $validated['reporter_user_id'] = auth()->id();
-
-        if (empty($validated['assigned_user_id'])) {
-            $validated['assigned_user_id'] = auth()->id();
-        }
 
         $project = Project::create($validated);
 

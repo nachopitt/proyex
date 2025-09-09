@@ -146,7 +146,7 @@ const addTag = (newTagName: string) => {
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
-                            <InputError class="mt-2" :message="form.errors.priority" />
+                            <InputError class="mt-2" :message="form.errors.assigned_user_id" />
                         </div>
 
                         <div>

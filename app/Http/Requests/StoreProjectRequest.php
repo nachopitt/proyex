@@ -4,5 +4,13 @@ namespace App\Http\Requests;
 
 class StoreProjectRequest extends ProjectRequest
 {
-    // You can add specific rules or authorization logic here if needed.
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'reporter_user_id' => $this->user()->id,
+        ]);
+    }
 }
