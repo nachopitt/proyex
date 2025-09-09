@@ -10,11 +10,6 @@ import { index, create, store } from '@/routes/tags';
 import { BreadcrumbItem, } from '@/types'
 import { dashboard } from '@/routes'
 
-interface Props {
-}
-
-const props = defineProps<Props>();
-
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',

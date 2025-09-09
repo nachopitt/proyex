@@ -2,7 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, Tag } from '@/types';
-import { index, create, destroy, update, edit } from '@/routes/tags';
+import { index, create, destroy, edit } from '@/routes/tags';
 import { dashboard } from '@/routes';
 import { Button } from '@/components/ui/button'
 import { ref, computed } from 'vue'
