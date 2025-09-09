@@ -6,6 +6,7 @@ use App\Enums\Priority;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use App\Models\Tag;
 use App\Models\User;
 use Inertia\Inertia;
 
@@ -33,6 +34,7 @@ class ProjectController extends Controller
         return Inertia::render('projects/Create', [
             'priorities' => Priority::asArray(),
             'users' => User::all(['id', 'name']),
+            'tags' => Tag::all(['id', 'name']),
         ]);
     }
 
@@ -49,6 +51,16 @@ class ProjectController extends Controller
         }
 
         $project = Project::create($validated);
+
+        $tags = $request->input('tags', []);
+        $tagIds = [];
+
+        foreach ($tags as $tag) {
+            $tag = Tag::firstOrCreate(['name' => $tag['name']]);
+            $tagIds[] = $tag['id'];
+        }
+
+        $project->tags()->sync($tagIds);
 
         return redirect()->route('projects.show', $project);
     }
@@ -71,9 +83,10 @@ class ProjectController extends Controller
     public function edit(Project $project)
     {
         return Inertia::render('projects/Edit', [
-            'project' => $project,
+            'project' => $project->load('tags'),
             'priorities' => Priority::asArray(),
             'users' => User::all(['id', 'name']),
+            'tags' => Tag::all(['id', 'name']),
         ]);
     }
 
@@ -83,6 +96,16 @@ class ProjectController extends Controller
     public function update(UpdateProjectRequest $request, Project $project)
     {
         $project->update($request->validated());
+
+        $tags = $request->input('tags', []);
+        $tagIds = [];
+
+        foreach ($tags as $tag) {
+            $tag = Tag::firstOrCreate(['name' => $tag['name']]);
+            $tagIds[] = $tag['id'];
+        }
+
+        $project->tags()->sync($tagIds);
 
         return redirect()->route('projects.show', $project);
     }

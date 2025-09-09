@@ -59,6 +59,7 @@ export interface Project {
     assigned_user: User;
     assigned_user_id: number;
     project_updates: ProjectUpdate[];
+    tags: Tag[];
 }
 
 export interface Priority {

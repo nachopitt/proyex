@@ -17,14 +17,18 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, show, edit, update } from '@/routes/projects';
-import { BreadcrumbItem, Priority, Project, User } from '@/types'
+import { BreadcrumbItem, Priority, Project, User, Tag } from '@/types'
 import { dashboard } from '@/routes'
 import DeleteProject from '@/components/DeleteProject.vue'
+import Multiselect from 'vue-multiselect'
+import { ref } from 'vue';
+
 
 interface Props {
     project: Project;
     priorities: Priority[];
     users: User[];
+    tags: Tag[];
 }
 
 const props = defineProps<Props>();
@@ -55,11 +59,25 @@ const form = useForm({
     assigned_user_id: String(props.project.assigned_user_id),
     start_date: props.project.start_date,
     due_date: props.project.due_date,
+    tags: props.project.tags, // Initialize with Tag objects
 })
+
+// Create a local ref for tags
+const availableTags = ref(props.tags);
 
 function submit() {
     form.put(update(props.project.id).url)
 }
+
+// Custom tag handler
+const addTag = (newTagName: string) => {
+    // Check if tag already exists to prevent duplicates
+    if (!availableTags.value.some(tag => tag.name === newTagName)) {
+        const newTag: Tag = { id: Date.now() * -1, name: newTagName }; // Temporary negative ID
+        availableTags.value.push(newTag);
+        form.tags.push(newTag);
+    }
+};
 </script>
 
 <template>
@@ -139,6 +157,22 @@ function submit() {
                         </div>
 
                         <div>
+                            <Label for="tags">Tags</Label>
+                            <Multiselect
+                                v-model="form.tags"
+                                :options="availableTags"
+                                :multiple="true"
+                                :taggable="true"
+                                @tag="addTag"
+                                placeholder="Select or create tags"
+                                label="name"
+                                track-by="name"
+                                class="mt-1 block w-full"
+                            />
+                            <InputError class="mt-2" :message="form.errors.tags" />
+                        </div>
+
+                        <div>
                             <Label for="start_date">Start Date</Label>
                             <Input
                                 id="start_date"
@@ -170,3 +204,4 @@ function submit() {
         </div>
     </AppLayout>
 </template>
+<style src="vue-multiselect/dist/vue-multiselect.css"></style>
