@@ -5,6 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import * as ProjectRoutes from '@/routes/projects'
+import * as TagRoutes from '@/routes/tags'
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
@@ -19,6 +20,11 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Projects',
         href: ProjectRoutes.index(),
+        icon: Folder,
+    },
+    {
+        title: 'Tags',
+        href: TagRoutes.index(),
         icon: Folder,
     },
 ];

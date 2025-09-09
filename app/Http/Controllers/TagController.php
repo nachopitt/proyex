@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use App\Models\Tag;
+use Inertia\Inertia;
 
 class TagController extends Controller
 {
@@ -13,7 +14,9 @@ class TagController extends Controller
      */
     public function index()
     {
-        //
+        return Inertia::render('Tags/Index', [
+            'tags' => Tag::latest()->paginate(10),
+        ]);
     }
 
     /**
@@ -21,7 +24,7 @@ class TagController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Tags/Create');
     }
 
     /**
@@ -29,7 +32,9 @@ class TagController extends Controller
      */
     public function store(StoreTagRequest $request)
     {
-        //
+        Tag::create($request->validated());
+
+        return redirect()->route('tags.index');
     }
 
     /**
@@ -45,7 +50,9 @@ class TagController extends Controller
      */
     public function edit(Tag $tag)
     {
-        //
+        return Inertia::render('Tags/Edit', [
+            'tag' => $tag,
+        ]);
     }
 
     /**
@@ -53,7 +60,9 @@ class TagController extends Controller
      */
     public function update(UpdateTagRequest $request, Tag $tag)
     {
-        //
+        $tag->update($request->validated());
+
+        return redirect()->route('tags.index');
     }
 
     /**
@@ -61,6 +70,8 @@ class TagController extends Controller
      */
     public function destroy(Tag $tag)
     {
-        //
+        $tag->delete();
+
+        return redirect()->route('tags.index');
     }
 }

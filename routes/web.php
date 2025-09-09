@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectUpdateController;
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,6 +19,10 @@ Route::resource('projects', ProjectController::class)
 
 Route::resource('projects.updates', ProjectUpdateController::class)
     ->shallow()
+    ->middleware(['auth', 'verified']);
+
+Route::resource('tags', TagController::class)
+    ->except(['show'])
     ->middleware(['auth', 'verified']);
 
 require __DIR__.'/settings.php';
