@@ -47,11 +47,11 @@ class ProjectController extends Controller
 
         $project = Project::create($validated);
 
-        $tags = $request->input('tags', []);
+        $tagNames = $request->input('tags', []);
         $tagIds = [];
 
-        foreach ($tags as $tag) {
-            $tag = Tag::firstOrCreate(['name' => $tag['name']]);
+        foreach ($tagNames as $tagName) {
+            $tag = Tag::firstOrCreate(['name' => $tagName]);
             $tagIds[] = $tag['id'];
         }
 
@@ -92,11 +92,11 @@ class ProjectController extends Controller
     {
         $project->update($request->validated());
 
-        $tags = $request->input('tags', []);
+        $tagNames = $request->input('tags', []);
         $tagIds = [];
 
-        foreach ($tags as $tag) {
-            $tag = Tag::firstOrCreate(['name' => $tag['name']]);
+        foreach ($tagNames as $tagName) {
+            $tag = Tag::firstOrCreate(['name' => $tagName]);
             $tagIds[] = $tag['id'];
         }
 

@@ -66,7 +66,10 @@ const form = useForm({
 const availableTags = ref(props.tags);
 
 function submit() {
-    form.put(update(props.project.id).url)
+    form.transform(data => ({
+        ...data,
+        tags: data.tags.map(tag => tag.name),
+    })).put(update(props.project.id).url)
 }
 
 // Custom tag handler
@@ -170,6 +173,10 @@ const addTag = (newTagName: string) => {
                                 class="mt-1 block w-full"
                             />
                             <InputError class="mt-2" :message="form.errors.tags" />
+                            <!-- Per-tag errors -->
+                            <div v-for="(tag, index) in form.tags" :key="index">
+                                <InputError :message="form.errors[`tags.${index}`]" />
+                            </div>
                         </div>
 
                         <div>

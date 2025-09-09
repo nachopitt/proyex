@@ -34,9 +34,21 @@ class ProjectRequest extends FormRequest
             'parent_id' => ['nullable', 'exists:projects,id'],
             'reporter_user_id' => ['exists:users,id'],
             'assigned_user_id' => ['nullable', 'exists:users,id'],
-            'tags' => ['nullable', 'array'],
-            'tags.*.id' => ['integer'],
-            'tags.*.name' => ['string', 'max:255'],
+            'tags' => ['nullable', 'array', 'min:1'],
+            'tags.*' => ['string', 'max:255', 'distinct'],
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages()
+    {
+        return [
+            'tags' => 'Select at least one tag.',
+            'tags.*.max' => 'The tag #:position must not be greater than 255 characters.',
         ];
     }
 }
