@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Status;
+
 class StoreProjectRequest extends ProjectRequest
 {
     /**
@@ -11,6 +13,7 @@ class StoreProjectRequest extends ProjectRequest
     {
         $this->merge([
             'reporter_user_id' => $this->user()->id,
+            'current_status' => Status::getInitialState()->value,
         ]);
     }
 }

@@ -5,13 +5,6 @@ namespace App\Contracts;
 interface Stateful
 {
     /**
-     * Get the state transition map.
-     *
-     * @return array
-     */
-    public function transitions(): array;
-
-    /**
      * Get the human-readable label for the enum case.
      *
      * @return string
@@ -25,4 +18,18 @@ interface Stateful
      * @return bool
      */
     public function canTransitionTo(self $next): bool;
+
+    /**
+     * Get the state transition map.
+     *
+     * @return array
+     */
+    public static function transitions(): array;
+
+    /**
+     * Get the initial state.
+     *
+     * @return self
+     */
+    public static function getInitialState(): self;
 }

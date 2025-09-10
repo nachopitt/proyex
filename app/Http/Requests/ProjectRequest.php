@@ -35,7 +35,7 @@ class ProjectRequest extends FormRequest
                 // Rule::enum(Status::class),
                 new AllowedStateTransition(
                     Status::class,
-                    $this->project->current_status,
+                    $this->project?->current_status,
                     'This project cannot be moved from :old to :new.',
                 ),
             ],

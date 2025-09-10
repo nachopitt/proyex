@@ -96,7 +96,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <div class="mt-4">
               <h3 class="text-lg font-medium">Assigned to</h3>
-              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned_user.name }}</p>
+              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned_user?.name ?? 'Unassigned' }}</p>
             </div>
 
             <div class="mt-4">

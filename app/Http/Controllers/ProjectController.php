@@ -34,7 +34,6 @@ class ProjectController extends Controller
     {
         return Inertia::render('projects/Create', [
             'priorities' => Priority::asArray(),
-            'statuses' => Status::asArray(),
             'users' => User::all(['id', 'name']),
             'tags' => Tag::all(['id', 'name']),
         ]);

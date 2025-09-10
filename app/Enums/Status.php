@@ -28,7 +28,7 @@ enum Status: string implements Labelable, Stateful
         };
     }
 
-    public function transitions(): array
+    public static function transitions(): array
     {
         return [
             self::PLANNED->value => [self::IN_PROGRESS->value, self::CANCELLED->value],
@@ -37,5 +37,10 @@ enum Status: string implements Labelable, Stateful
             self::COMPLETED->value => [],
             self::CANCELLED->value => [],
         ];
+    }
+
+    public static function getInitialState(): self
+    {
+        return self::PLANNED;
     }
 }

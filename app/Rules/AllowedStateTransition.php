@@ -39,8 +39,13 @@ class AllowedStateTransition implements ValidationRule
             return;
         }
 
-        // If there is no initial state, the transition is allowed.
+        // If there is no initial state, the transition must be to the initial state.
         if (!$this->fromState) {
+            if ($toState === $this->enumClass::getInitialState()) {
+                return;
+            }
+
+            $fail('The initial state must be ' . $this->enumClass::getInitialState()->getLabel() . '.');
             return;
         }
 

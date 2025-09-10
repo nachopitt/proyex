@@ -12,6 +12,10 @@ trait HasStateMachine
             return false;
         }
 
-        return in_array($next->value, $this->transitions()[$this->value] ?? []);
+        if ($this === $next) {
+            return true;
+        }
+
+        return in_array($next->value, self::transitions()[$this->value] ?? []);
     }
 }
