@@ -50,7 +50,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     description: props.projectUpdate.description,
-    status: String(props.projectUpdate.status),
+    status: props.projectUpdate.status,
     progress_percentage: props.projectUpdate.progress_percentage,
 })
 

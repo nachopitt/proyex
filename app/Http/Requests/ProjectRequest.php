@@ -27,7 +27,7 @@ class ProjectRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'priority' => ['required', 'integer', Rule::in(array_column(Priority::cases(), 'value'))],
+            'priority' => ['required', Rule::enum(Priority::class)],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:due_date'],

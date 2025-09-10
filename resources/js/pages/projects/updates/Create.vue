@@ -49,7 +49,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     description: '',
-    status: '1',
+    status: '',
     progress_percentage: '',
 })
 

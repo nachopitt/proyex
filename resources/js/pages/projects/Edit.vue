@@ -55,7 +55,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     title: props.project.title,
     description: props.project.description,
-    priority: String(props.project.priority),
+    priority: props.project.priority,
     assigned_user_id: String(props.project.assigned_user_id),
     start_date: props.project.start_date,
     due_date: props.project.due_date,

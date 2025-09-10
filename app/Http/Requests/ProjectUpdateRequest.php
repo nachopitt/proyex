@@ -26,7 +26,7 @@ class ProjectUpdateRequest extends FormRequest
     {
         return [
             'description' => ['required', 'string'],
-            'status' => ['required', 'string', Rule::in(array_column(Status::cases(), 'value'))],
+            'status' => ['required', Rule::enum(Status::class)],
             'progress_percentage' => ['required', 'integer', 'min:0', 'max:100'],
         ];
     }
