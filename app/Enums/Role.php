@@ -5,12 +5,12 @@ namespace App\Enums;
 use App\Contracts\HasLabel;
 use App\Traits\HasArrayRepresentation;
 
-enum Role: int implements HasLabel
+enum Role: string implements HasLabel
 {
     use HasArrayRepresentation;
 
-    case ADMIN = 1;
-    case USER = 2;
+    case ADMIN = 'admin';
+    case USER = 'user';
 
     public function getLabel(): string
     {

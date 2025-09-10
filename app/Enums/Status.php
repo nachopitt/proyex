@@ -5,15 +5,15 @@ namespace App\Enums;
 use App\Contracts\HasLabel;
 use App\Traits\HasArrayRepresentation;
 
-enum Status: int implements HasLabel
+enum Status: string implements HasLabel
 {
     use HasArrayRepresentation;
 
-    case PLANNED = 1;
-    case IN_PROGRESS = 2;
-    case ON_HOLD = 3;
-    case COMPLETED = 4;
-    case CANCELLED = 5;
+    case PLANNED = 'planned';
+    case IN_PROGRESS = 'in-progress';
+    case ON_HOLD = 'on-hold';
+    case COMPLETED = 'completed';
+    case CANCELLED = 'cancelled';
 
     public function getLabel(): string
     {

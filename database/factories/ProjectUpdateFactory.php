@@ -21,7 +21,7 @@ class ProjectUpdateFactory extends Factory
     {
         return [
             'description' => fake()->text(),
-            'status' => fake()->numberBetween(Status::PLANNED->value, Status::CANCELLED->value),
+            'status' => fake()->randomElement(Status::class),
             'progress_percentage' => fake()->numberBetween(0, 100),
             'project_id' => Project::all()->random()->id,
             'updater_user_id' => User::all()->random()->id,

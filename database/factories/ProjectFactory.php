@@ -21,7 +21,7 @@ class ProjectFactory extends Factory
         return [
             'title' => fake()->sentence(),
             'description' => fake()->text(),
-            'priority' => fake()->numberBetween(Priority::LOW->value, Priority::HIGH->value),
+            'priority' => fake()->randomElement(Priority::class),
             'start_date' => fake()->date(),
             'due_date' => fake()->date(),
             'end_date' => fake()->date(),

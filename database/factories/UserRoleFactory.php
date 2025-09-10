@@ -18,7 +18,7 @@ class UserRoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'role' => fake()->numberBetween(Role::ADMIN->value, Role::USER->value),
+            'role' => fake()->randomElement(Role::class),
         ];
     }
 }
