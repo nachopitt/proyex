@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum Priority: int
+use App\Contracts\HasLabel;
+use App\Traits\HasArrayRepresentation;
+
+enum Priority: int implements HasLabel
 {
+    use HasArrayRepresentation;
+
     case LOW = 1;
     case MEDIUM = 2;
     case HIGH = 3;
@@ -15,14 +20,5 @@ enum Priority: int
             self::MEDIUM => 'Medium',
             self::HIGH => 'High',
         };
-    }
-
-    public static function asArray(): array
-    {
-        $values = [];
-        foreach (self::cases() as $case) {
-            $values[] = (object)['id' => $case->value, 'name' => $case->getLabel()];
-        }
-        return $values;
     }
 }

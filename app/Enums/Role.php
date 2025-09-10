@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum Role: int
+use App\Contracts\HasLabel;
+use App\Traits\HasArrayRepresentation;
+
+enum Role: int implements HasLabel
 {
+    use HasArrayRepresentation;
+
     case ADMIN = 1;
     case USER = 2;
 
@@ -13,14 +18,5 @@ enum Role: int
             self::ADMIN => 'Admin',
             self::USER => 'User',
         };
-    }
-
-    public static function asArray(): array
-    {
-        $values = [];
-        foreach (self::cases() as $case) {
-            $values[] = (object)['id' => $case->value, 'name' => $case->getLabel()];
-        }
-        return $values;
     }
 }

@@ -2,8 +2,13 @@
 
 namespace App\Enums;
 
-enum Status: int
+use App\Contracts\HasLabel;
+use App\Traits\HasArrayRepresentation;
+
+enum Status: int implements HasLabel
 {
+    use HasArrayRepresentation;
+
     case PLANNED = 1;
     case IN_PROGRESS = 2;
     case COMPLETED = 3;
@@ -19,14 +24,5 @@ enum Status: int
             self::ON_HOLD => 'On hold',
             self::CANCELLED => 'Cancelled',
         };
-    }
-
-    public static function asArray(): array
-    {
-        $values = [];
-        foreach (self::cases() as $case) {
-            $values[] = (object)['id' => $case->value, 'name' => $case->getLabel()];
-        }
-        return $values;
     }
 }
