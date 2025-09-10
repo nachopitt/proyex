@@ -2,7 +2,7 @@
 
 namespace App\Contracts;
 
-interface HasLabel
+interface Labelable
 {
     public function getLabel(): string;
 }

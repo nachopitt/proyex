@@ -2,10 +2,10 @@
 
 namespace App\Enums;
 
-use App\Contracts\HasLabel;
+use App\Contracts\Labelable;
 use App\Traits\HasArrayRepresentation;
 
-enum Role: string implements HasLabel
+enum Role: string implements Labelable
 {
     use HasArrayRepresentation;
 
