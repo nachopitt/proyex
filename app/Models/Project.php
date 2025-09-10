@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Priority;
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,7 @@ class Project extends Model
         'title',
         'description',
         'priority',
+        'current_status',
         'start_date',
         'due_date',
         'end_date',
@@ -44,6 +46,7 @@ class Project extends Model
     {
         return [
             'priority' => Priority::class,
+            'current_status' => Status::class,
         ];
     }
 
@@ -54,6 +57,7 @@ class Project extends Model
      */
     protected $appends = [
         'priority_label',
+        'current_status_label',
     ];
 
     /**
@@ -113,6 +117,18 @@ class Project extends Model
             get: fn() => $this->priority instanceof Priority
                 ? $this->priority->getLabel()
                 : Priority::from($this->priority)->getLabel(),
+        );
+    }
+
+    /**
+     * Get the project's current status label.
+     */
+    protected function currentStatusLabel(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->current_status instanceof Status
+                ? $this->current_status->getLabel()
+                : Status::from($this->current_status)->getLabel(),
         );
     }
 }

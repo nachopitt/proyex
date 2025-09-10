@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Priority;
+use App\Enums\Status;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -28,6 +29,7 @@ class ProjectRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'priority' => ['required', Rule::enum(Priority::class)],
+            'current_status' => ['required', Rule::enum(Status::class)],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:due_date'],

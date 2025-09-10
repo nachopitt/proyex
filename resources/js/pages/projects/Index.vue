@@ -83,6 +83,7 @@ const props = defineProps<Props>();
 
                             <div class="mt-4 text-xs text-muted-foreground space-y-1">
                                 <p>Priority: {{ project.priority_label }}</p>
+                                <p>Current status: {{ project.current_status_label }}</p>
                                 <p>Start date: {{ project.start_date }}</p>
                                 <p>Due date: {{ project.due_date }}</p>
                                 <p>End date: {{ project.end_date }}</p>

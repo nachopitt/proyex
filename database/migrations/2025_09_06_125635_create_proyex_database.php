@@ -69,6 +69,7 @@ return new class extends Migration
                 $table->text('description')
                     ->nullable();
                 $table->string('priority', 20);
+                $table->string('current_status', 20);
                 $table->date('start_date')
                     ->nullable();
                 $table->date('due_date')

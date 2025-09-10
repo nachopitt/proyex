@@ -17,13 +17,14 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, create, store } from '@/routes/projects';
-import { BreadcrumbItem, Priority, User, Tag } from '@/types'
+import { BreadcrumbItem, Priority, User, Tag, Status } from '@/types'
 import { dashboard } from '@/routes'
 import Multiselect from 'vue-multiselect'
 import { ref } from 'vue';
 
 interface Props {
   priorities: Priority[];
+  statuses: Status[];
   users: User[];
   tags: Tag[];
 }
@@ -49,6 +50,7 @@ const form = useForm({
     title: '',
     description: '',
     priority: '',
+    current_status: '',
     assigned_user_id: '',
     start_date: '',
     due_date: '',
@@ -128,6 +130,29 @@ const addTag = (newTagName: string) => {
                                 </SelectContent>
                             </Select>
                             <InputError class="mt-2" :message="form.errors.priority" />
+                        </div>
+
+
+                        <div>
+                            <Label for="status">Status</Label>
+                            <Select v-model="form.current_status">
+                                <SelectTrigger class="mt-1">
+                                    <SelectValue placeholder="Select a status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Statuses</SelectLabel>
+                                        <SelectItem
+                                            v-for="status in props.statuses"
+                                            :key="status.id"
+                                            :value="String(status.id)"
+                                        >
+                                            {{ status.name }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError class="mt-2" :message="form.errors.current_status" />
                         </div>
 
                         <div>

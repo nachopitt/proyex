@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, show, edit, update } from '@/routes/projects';
-import { BreadcrumbItem, Priority, Project, User, Tag } from '@/types'
+import { BreadcrumbItem, Priority, Project, User, Tag, Status } from '@/types'
 import { dashboard } from '@/routes'
 import DeleteProject from '@/components/DeleteProject.vue'
 import Multiselect from 'vue-multiselect'
@@ -27,6 +27,7 @@ import { ref } from 'vue';
 interface Props {
     project: Project;
     priorities: Priority[];
+    statuses: Status[];
     users: User[];
     tags: Tag[];
 }
@@ -56,6 +57,7 @@ const form = useForm({
     title: props.project.title,
     description: props.project.description,
     priority: props.project.priority,
+    current_status: props.project.current_status,
     assigned_user_id: String(props.project.assigned_user_id),
     start_date: props.project.start_date,
     due_date: props.project.due_date,
@@ -135,6 +137,28 @@ const addTag = (newTagName: string) => {
                                 </SelectContent>
                             </Select>
                             <InputError class="mt-2" :message="form.errors.priority" />
+                        </div>
+
+                        <div>
+                            <Label for="current_status">Current status</Label>
+                            <Select v-model="form.current_status">
+                                <SelectTrigger class="mt-1">
+                                    <SelectValue placeholder="Select a status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Statuses</SelectLabel>
+                                        <SelectItem
+                                            v-for="current_status in statuses"
+                                            :key="current_status.id"
+                                            :value="String(current_status.id)"
+                                        >
+                                            {{ current_status.name }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError class="mt-2" :message="form.errors.current_status" />
                         </div>
 
                         <div>

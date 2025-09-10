@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Priority;
+use App\Enums\Status;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
@@ -33,6 +34,7 @@ class ProjectController extends Controller
     {
         return Inertia::render('projects/Create', [
             'priorities' => Priority::asArray(),
+            'statuses' => Status::asArray(),
             'users' => User::all(['id', 'name']),
             'tags' => Tag::all(['id', 'name']),
         ]);
@@ -80,6 +82,7 @@ class ProjectController extends Controller
         return Inertia::render('projects/Edit', [
             'project' => $project->load('tags'),
             'priorities' => Priority::asArray(),
+            'statuses' => Status::asArray(),
             'users' => User::all(['id', 'name']),
             'tags' => Tag::all(['id', 'name']),
         ]);

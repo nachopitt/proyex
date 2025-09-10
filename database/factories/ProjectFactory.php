@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\Priority;
+use App\Enums\Status;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,6 +23,7 @@ class ProjectFactory extends Factory
             'title' => fake()->sentence(),
             'description' => fake()->text(),
             'priority' => fake()->randomElement(Priority::class),
+            'current_status' => fake()->randomElement(Status::class),
             'start_date' => fake()->date(),
             'due_date' => fake()->date(),
             'end_date' => fake()->date(),
