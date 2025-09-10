@@ -3,11 +3,13 @@
 namespace App\Enums;
 
 use App\Contracts\Labelable;
+use App\Contracts\Stateful;
 use App\Traits\HasArrayRepresentation;
+use App\Traits\HasStateMachine;
 
-enum Status: string implements Labelable
+enum Status: string implements Labelable, Stateful
 {
-    use HasArrayRepresentation;
+    use HasArrayRepresentation, HasStateMachine;
 
     case PLANNED = 'planned';
     case IN_PROGRESS = 'in-progress';
@@ -24,5 +26,16 @@ enum Status: string implements Labelable
             self::COMPLETED => 'Completed',
             self::CANCELLED => 'Cancelled',
         };
+    }
+
+    public function transitions(): array
+    {
+        return [
+            self::PLANNED->value => [self::IN_PROGRESS->value, self::CANCELLED->value],
+            self::IN_PROGRESS->value => [self::ON_HOLD->value, self::COMPLETED->value, self::CANCELLED->value],
+            self::ON_HOLD->value => [self::IN_PROGRESS->value, self::CANCELLED->value],
+            self::COMPLETED->value => [],
+            self::CANCELLED->value => [],
+        ];
     }
 }

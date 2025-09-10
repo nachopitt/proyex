@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Priority;
 use App\Enums\Status;
+use App\Rules\AllowedStateTransition;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,7 +30,15 @@ class ProjectRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'priority' => ['required', Rule::enum(Priority::class)],
-            'current_status' => ['required', Rule::enum(Status::class)],
+            'current_status' => [
+                'required',
+                // Rule::enum(Status::class),
+                new AllowedStateTransition(
+                    Status::class,
+                    $this->project->current_status,
+                    'This project cannot be moved from :old to :new.',
+                ),
+            ],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:due_date'],
