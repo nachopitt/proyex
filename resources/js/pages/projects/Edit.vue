@@ -58,6 +58,7 @@ const form = useForm({
     description: props.project.description,
     priority: props.project.priority,
     current_status: props.project.current_status,
+    current_progress_percentage: props.project.current_progress_percentage,
     assigned_user_id: String(props.project.assigned_user_id),
     start_date: props.project.start_date,
     due_date: props.project.due_date,
@@ -159,6 +160,19 @@ const addTag = (newTagName: string) => {
                                 </SelectContent>
                             </Select>
                             <InputError class="mt-2" :message="form.errors.current_status" />
+                        </div>
+
+                        <div>
+                            <Label for="current_progress_percentage">Current progress</Label>
+                            <Input
+                                id="current_progress_percentage"
+                                type="text"
+                                class="mt-1 block w-full"
+                                v-model="form.current_progress_percentage"
+                                required
+                                autofocus
+                            />
+                            <InputError class="mt-2" :message="form.errors.current_progress_percentage" />
                         </div>
 
                         <div>

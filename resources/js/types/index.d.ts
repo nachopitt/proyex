@@ -54,6 +54,7 @@ export interface Project {
     priority_label: string;
     current_status: string;
     current_status_label: string;
+    current_progress_percentage: number;
     start_date: string;
     due_date: string;
     end_date: string;

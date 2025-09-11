@@ -75,6 +75,11 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
 
             <div class="mt-4">
+              <h3 class="text-lg font-medium">Current progress</h3>
+              <p class="mt-1 text-sm text-muted-foreground">{{ props.project.current_progress_percentage }}</p>
+            </div>
+
+            <div class="mt-4">
               <h3 class="text-lg font-medium">Start date</h3>
               <p class="mt-1 text-sm text-muted-foreground">{{ props.project.start_date }}</p>
             </div>

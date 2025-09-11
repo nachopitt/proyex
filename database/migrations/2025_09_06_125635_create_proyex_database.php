@@ -41,7 +41,8 @@ return new class extends Migration
                     ->autoIncrement();
                 $table->text('description');
                 $table->string('status', 20);
-                $table->tinyInteger('progress_percentage');
+                $table->tinyInteger('progress_percentage')
+                    ->unsigned();
                 $table->bigInteger('project_id')
                     ->unsigned();
                 $table->bigInteger('updater_user_id')
@@ -70,6 +71,8 @@ return new class extends Migration
                     ->nullable();
                 $table->string('priority', 20);
                 $table->string('current_status', 20);
+                $table->tinyInteger('current_progress_percentage')
+                    ->unsigned();
                 $table->date('start_date')
                     ->nullable();
                 $table->date('due_date')
@@ -121,7 +124,8 @@ return new class extends Migration
                     ->autoIncrement();
                 $table->string('first_name', 255);
                 $table->string('last_name', 255);
-                $table->tinyInteger('active');
+                $table->tinyInteger('active')
+                    ->unsigned();
                 $table->bigInteger('user_id')
                     ->unsigned();
                 $table->timestamp('created_at')

@@ -24,6 +24,7 @@ class ProjectFactory extends Factory
             'description' => fake()->text(),
             'priority' => fake()->randomElement(Priority::class),
             'current_status' => fake()->randomElement(Status::class),
+            'current_progress_percentage' => fake()->numberBetween(0, 100),
             'start_date' => fake()->date(),
             'due_date' => fake()->date(),
             'end_date' => fake()->date(),

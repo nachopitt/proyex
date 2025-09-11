@@ -29,6 +29,7 @@ class Project extends Model
         'description',
         'priority',
         'current_status',
+        'current_progress_percentage',
         'start_date',
         'due_date',
         'end_date',

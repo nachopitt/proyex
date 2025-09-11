@@ -32,13 +32,14 @@ class ProjectRequest extends FormRequest
             'priority' => ['required', Rule::enum(Priority::class)],
             'current_status' => [
                 'required',
-                // Rule::enum(Status::class),
+                Rule::enum(Status::class),
                 new AllowedStateTransition(
                     Status::class,
                     $this->project?->current_status,
                     'This project cannot be moved from :old to :new.',
                 ),
             ],
+            'current_progress_percentage' => ['required', 'integer', 'min:0', 'max:100'],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:due_date'],

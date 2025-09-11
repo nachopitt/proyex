@@ -50,7 +50,7 @@ class ProjectController extends Controller
 
         $project->projectUpdates()->create([
             'description' => 'Project created.',
-            'status' => $validated['current_status'],
+            'status' => $project->current_status,
             'progress_percentage' => 0,
             'updater_user_id' => auth()->id(),
         ]);
