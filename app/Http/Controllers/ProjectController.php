@@ -48,6 +48,13 @@ class ProjectController extends Controller
 
         $project = Project::create($validated);
 
+        $project->projectUpdates()->create([
+            'description' => 'Project created.',
+            'status' => $validated['current_status'],
+            'progress_percentage' => 0,
+            'updater_user_id' => auth()->id(),
+        ]);
+
         $tagNames = $request->input('tags', []);
         $tagIds = [];
 
