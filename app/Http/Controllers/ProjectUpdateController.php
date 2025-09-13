@@ -12,25 +12,6 @@ use Inertia\Inertia;
 class ProjectUpdateController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index(Project $project)
-    {
-        // TODO: do something with this
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(Project $project)
-    {
-        return Inertia::render('projects/updates/Create', [
-            'project' => $project,
-            'statuses' => Status::asArray(),
-        ]);
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreProjectUpdateRequest $request, Project $project)
@@ -47,14 +28,6 @@ class ProjectUpdateController extends Controller
         ]);
 
         return redirect()->route('projects.show', $project);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Project $project, ProjectUpdate $update)
-    {
-        // TODO: do something with this
     }
 
     /**

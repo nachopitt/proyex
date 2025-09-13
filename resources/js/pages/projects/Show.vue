@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { index, show, edit } from '@/routes/projects';
-import { create as createUpdate } from '@/routes/projects/updates';
 import { edit as editUpdate } from '@/routes/updates';
 import { BreadcrumbItem, Project, Status } from '@/types';
 import LogProgress from '@/components/LogProgress.vue';
@@ -42,9 +41,6 @@ const breadcrumbs: BreadcrumbItem[] = [
               {{ props.project.title }}
             </h2>
             <div class="flex items-center gap-4">
-              <Link :href="createUpdate(props.project.id).url">
-                <Button>Create Project Update</Button>
-              </Link>
               <Link :href="edit(props.project.id).url">
                 <Button>Edit Project</Button>
               </Link>

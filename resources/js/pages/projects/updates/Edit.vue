@@ -50,8 +50,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     description: props.projectUpdate.description,
-    status: props.projectUpdate.status,
-    progress_percentage: props.projectUpdate.progress_percentage,
 })
 
 function submit() {
@@ -76,41 +74,6 @@ function submit() {
                                 v-model="form.description"
                             />
                             <InputError class="mt-2" :message="form.errors.description" />
-                        </div>
-
-                        <div>
-                            <Label for="status">Status</Label>
-                            <Select v-model="form.status">
-                                <SelectTrigger class="mt-1">
-                                    <SelectValue placeholder="Select a status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Statuses</SelectLabel>
-                                        <SelectItem
-                                            v-for="status in statuses"
-                                            :key="status.id"
-                                            :value="String(status.id)"
-                                        >
-                                            {{ status.name }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError class="mt-2" :message="form.errors.status" />
-                        </div>
-
-                        <div>
-                            <Label for="progress_percentage">Progress</Label>
-                            <Input
-                                id="progress_percentage"
-                                type="text"
-                                class="mt-1 block w-full"
-                                v-model="form.progress_percentage"
-                                required
-                                autofocus
-                            />
-                            <InputError class="mt-2" :message="form.errors.progress_percentage" />
                         </div>
 
                         <div class="flex items-center gap-4">

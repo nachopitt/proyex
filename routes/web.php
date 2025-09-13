@@ -19,7 +19,8 @@ Route::resource('projects', ProjectController::class)
 
 Route::resource('projects.updates', ProjectUpdateController::class)
     ->shallow()
-    ->middleware(['auth', 'verified']);
+    ->middleware(['auth', 'verified'])
+    ->except([ 'index', 'create', 'show']);
 
 Route::resource('tags', TagController::class)
     ->except(['show'])
