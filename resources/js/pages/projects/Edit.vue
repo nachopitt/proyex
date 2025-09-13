@@ -141,41 +141,6 @@ const addTag = (newTagName: string) => {
                         </div>
 
                         <div>
-                            <Label for="current_status">Current status</Label>
-                            <Select v-model="form.current_status">
-                                <SelectTrigger class="mt-1">
-                                    <SelectValue placeholder="Select a status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Statuses</SelectLabel>
-                                        <SelectItem
-                                            v-for="current_status in statuses"
-                                            :key="current_status.id"
-                                            :value="String(current_status.id)"
-                                        >
-                                            {{ current_status.name }}
-                                        </SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError class="mt-2" :message="form.errors.current_status" />
-                        </div>
-
-                        <div>
-                            <Label for="current_progress_percentage">Current progress</Label>
-                            <Input
-                                id="current_progress_percentage"
-                                type="text"
-                                class="mt-1 block w-full"
-                                v-model="form.current_progress_percentage"
-                                required
-                                autofocus
-                            />
-                            <InputError class="mt-2" :message="form.errors.current_progress_percentage" />
-                        </div>
-
-                        <div>
                             <Label for="assigned_user_id">Assigned to</Label>
                             <Select v-model="form.assigned_user_id">
                                 <SelectTrigger class="mt-1">

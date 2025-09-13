@@ -51,7 +51,7 @@ class ProjectController extends Controller
         $project->projectUpdates()->create([
             'description' => 'Project created.',
             'status' => $project->current_status,
-            'progress_percentage' => 0,
+            'progress_percentage' => $project->current_progress_percentage,
             'updater_user_id' => auth()->id(),
         ]);
 
@@ -77,6 +77,7 @@ class ProjectController extends Controller
 
         return Inertia::render('projects/Show', [
             'project' => $project,
+            'statuses' => Status::asArray(),
         ]);
     }
 

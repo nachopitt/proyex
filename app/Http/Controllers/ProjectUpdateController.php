@@ -37,7 +37,14 @@ class ProjectUpdateController extends Controller
     {
         $validated = $request->validated();
 
-        $project->projectUpdates()->create($validated + ['updater_user_id' => auth()->id()]);
+        $project->update($validated['project']);
+
+        $project->projectUpdates()->create([
+            'description' => $validated['description'],
+            'status' => $validated['project']['current_status'],
+            'progress_percentage' => $validated['project']['current_progress_percentage'],
+            'updater_user_id' => auth()->id()
+        ]);
 
         return redirect()->route('projects.show', $project);
     }

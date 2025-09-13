@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Status;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ProjectUpdateRequest extends FormRequest
 {
@@ -26,8 +24,6 @@ class ProjectUpdateRequest extends FormRequest
     {
         return [
             'description' => ['required', 'string'],
-            'status' => ['required', Rule::enum(Status::class)],
-            'progress_percentage' => ['required', 'integer', 'min:0', 'max:100'],
         ];
     }
 }

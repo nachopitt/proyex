@@ -5,11 +5,13 @@ import { dashboard } from '@/routes';
 import { index, show, edit } from '@/routes/projects';
 import { create as createUpdate } from '@/routes/projects/updates';
 import { edit as editUpdate } from '@/routes/updates';
-import { BreadcrumbItem, Project } from '@/types';
+import { BreadcrumbItem, Project, Status } from '@/types';
+import LogProgress from '@/components/LogProgress.vue';
 import { Link } from '@inertiajs/vue3';
 
 interface Props {
   project: Project;
+  statuses: Status[];
 }
 
 const props = defineProps<Props>();
@@ -102,6 +104,11 @@ const breadcrumbs: BreadcrumbItem[] = [
             <div class="mt-4">
               <h3 class="text-lg font-medium">Assigned to</h3>
               <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned_user?.name ?? 'Unassigned' }}</p>
+            </div>
+
+            <div class="mt-4">
+              <h3 class="text-lg font-medium">Log Progress</h3>
+              <LogProgress :project="props.project" :statuses="props.statuses" />
             </div>
 
             <div class="mt-4">

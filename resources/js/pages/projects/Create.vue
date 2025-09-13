@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, create, store } from '@/routes/projects';
-import { BreadcrumbItem, Priority, User, Tag, Status } from '@/types'
+import { BreadcrumbItem, Priority, User, Tag } from '@/types'
 import { dashboard } from '@/routes'
 import Multiselect from 'vue-multiselect'
 import { ref } from 'vue';
