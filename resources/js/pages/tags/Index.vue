@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem, Tag } from '@/types';
+import { BreadcrumbItem, PaginationLink, Tag } from '@/types';
 import { index, create, destroy, edit } from '@/routes/tags';
 import { dashboard } from '@/routes';
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     tags: {
         data: Tag[];
-        links: any[];
+        links: PaginationLink[];
     };
 }
 

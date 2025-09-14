@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem, Project } from '@/types';
+import { BreadcrumbItem, PaginationLink, Project } from '@/types';
 import { index, show, create } from '@/routes/projects';
 import { dashboard } from '@/routes';
 import { Button } from '@/components/ui/button'
@@ -21,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     projects: {
         data: Project[];
-        links: any[]; // You might want to define a more specific type for pagination links
+        links: PaginationLink[];
     };
 }
 

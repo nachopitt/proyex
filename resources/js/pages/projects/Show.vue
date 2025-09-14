@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { index, show, edit } from '@/routes/projects';
 import { edit as editUpdate } from '@/routes/updates';
-import { BreadcrumbItem, Project, ProjectUpdate, Status } from '@/types';
+import { BreadcrumbItem, Project, ProjectUpdate, Status, PaginationLink } from '@/types';
 import LogProgress from '@/components/LogProgress.vue';
 import { Link } from '@inertiajs/vue3';
 import Pagination from '@/components/ui/pagination/Pagination.vue';
@@ -13,7 +13,7 @@ interface Props {
   project: Project;
   project_updates: {
       data: ProjectUpdate[];
-      links: any[]; // You might want to define a more specific type for pagination links
+      links: PaginationLink[];
   };
   statuses: Status[];
 }

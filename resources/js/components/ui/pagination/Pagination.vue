@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { PaginationLink } from '@/types';
 import { Link } from '@inertiajs/vue3';
 
 interface Props {
-    links: any[]; // You might want to define a more specific type for pagination links
+    links: PaginationLink[];
 }
 
 const props = defineProps<Props>();

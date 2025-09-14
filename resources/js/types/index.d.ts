@@ -79,3 +79,9 @@ export interface Tag {
     id: number;
     name: string;
 }
+
+export interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
