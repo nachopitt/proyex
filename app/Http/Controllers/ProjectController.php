@@ -73,10 +73,16 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load(['tags', 'reporterUser', 'assignedUser', 'projectUpdates.updaterUser']);
+        $project->load(['tags', 'reporterUser', 'assignedUser']);
+
+        $projectUpdates = $project->projectUpdates()
+            ->latest()
+            ->with('updaterUser')
+            ->paginate(10);
 
         return Inertia::render('projects/Show', [
             'project' => $project,
+            'project_updates' => $projectUpdates,
             'statuses' => Status::asArray(),
         ]);
     }

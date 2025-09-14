@@ -4,12 +4,17 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { index, show, edit } from '@/routes/projects';
 import { edit as editUpdate } from '@/routes/updates';
-import { BreadcrumbItem, Project, Status } from '@/types';
+import { BreadcrumbItem, Project, ProjectUpdate, Status } from '@/types';
 import LogProgress from '@/components/LogProgress.vue';
 import { Link } from '@inertiajs/vue3';
+import Pagination from '@/components/ui/pagination/Pagination.vue';
 
 interface Props {
   project: Project;
+  project_updates: {
+      data: ProjectUpdate[];
+      links: any[]; // You might want to define a more specific type for pagination links
+  };
   statuses: Status[];
 }
 
@@ -107,10 +112,12 @@ const breadcrumbs: BreadcrumbItem[] = [
               <LogProgress :project="props.project" :statuses="props.statuses" />
             </div>
 
+            <Pagination :links="props.project_updates.links" />
+
             <div class="mt-4">
               <h3 class="text-lg font-medium">Project Updates</h3>
               <ul class="mt-1 space-y-4">
-                <li v-for="update in props.project.project_updates" :key="update.id" class="bg-gray-50 dark:bg-[#161615] p-4 rounded-lg shadow">
+                <li v-for="update in props.project_updates.data" :key="update.id" class="bg-gray-50 dark:bg-[#161615] p-4 rounded-lg shadow">
                   <div class="flex justify-between items-start">
                     <div>
                       <p class="text-base">{{ update.description }}</p>
@@ -125,6 +132,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </li>
               </ul>
             </div>
+
+            <Pagination :links="props.project_updates.links" />
+
           </div>
         </div>
       </div>
