@@ -78,7 +78,8 @@ class ProjectController extends Controller
         $projectUpdates = $project->projectUpdates()
             ->latest()
             ->with('updaterUser')
-            ->paginate(10);
+            ->paginate(10)
+            ->withPath(route('projects.show', $project));
 
         return Inertia::render('projects/Show', [
             'project' => $project,

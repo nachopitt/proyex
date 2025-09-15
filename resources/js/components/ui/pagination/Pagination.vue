@@ -6,28 +6,25 @@ interface Props {
     links: PaginationLink[];
 }
 
-const props = defineProps<Props>();
+const { links } = defineProps<Props>();
 </script>
 
 <template>
-    <div class="mt-4 flex justify-center">
-        <div class="flex space-x-1">
-            <template v-for="(link, index) in props.links" :key="index">
-                <Link
-                    v-if="link.url"
-                    :href="link.url"
-                    :class="[
-                        'px-3 py-1 border rounded-md',
-                        { 'font-bold bg-gray-50 dark:bg-[#161615]': link.active },
-                        { 'hover:bg-gray-50 hover:dark:bg-[#161615]': link.url },
-                    ]"
-                >
-                    <span v-html="link.label"></span>
-                </Link>
-                <span
-                    v-else
+    <div v-if="links.length > 3">
+        <div class="flex flex-wrap -mb-1">
+            <template v-for="(link, key) in links" :key="key">
+                <div
+                    v-if="link.url === null"
+                    class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded"
                     v-html="link.label"
-                    class="px-3 py-1 border rounded-md cursor-not-allowed"
+                />
+                <Link
+                    v-else
+                    class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded hover:bg-white focus:border-indigo-500 focus:text-indigo-500"
+                    :class="{ 'bg-white': link.active }"
+                    :href="link.url"
+                    preserve-scroll
+                    v-html="link.label"
                 />
             </template>
         </div>
