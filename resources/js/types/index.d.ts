@@ -63,6 +63,8 @@ export interface Project {
     assigned_user_id: number;
     project_updates: ProjectUpdate[];
     tags: Tag[];
+    parent: Project | null;
+    children: Project[];
 }
 
 export interface Priority {

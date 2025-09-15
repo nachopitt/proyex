@@ -58,6 +58,24 @@ const breadcrumbs: BreadcrumbItem[] = [
               <p class="mt-1 text-sm text-muted-foreground">{{ props.project.description }}</p>
             </div>
 
+            <div v-if="project.parent" class="mt-4">
+                <h3 class="text-lg font-medium">Parent project</h3>
+                <Link :href="show(project.parent.id).url" class="text-sm font-semibold hover:underline">
+                    {{ project.parent.title }}
+                </Link>
+            </div>
+
+            <div v-if="project.children && project.children.length > 0" class="mt-4">
+                <h3 class="text-lg font-medium">Children projects</h3>
+                <ul>
+                    <li v-for="child in project.children" :key="child.id">
+                        <Link :href="show(child.id).url" class="text-sm font-semibold hover:underline">
+                            {{ child.title }}
+                        </Link>
+                    </li>
+                </ul>
+            </div>
+
             <div class="mt-4">
               <h3 class="text-lg font-medium">Tags</h3>
               <div v-if="project.tags && project.tags.length > 0" class="mt-2 flex flex-wrap gap-1">

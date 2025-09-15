@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { index, create, store } from '@/routes/projects';
-import { BreadcrumbItem, Priority, User, Tag } from '@/types'
+import { BreadcrumbItem, Priority, User, Tag, Project } from '@/types'
 import { dashboard } from '@/routes'
 import Multiselect from 'vue-multiselect'
 import { ref } from 'vue';
@@ -26,6 +26,7 @@ interface Props {
     priorities: Priority[];
     users: User[];
     tags: Tag[];
+    projects: Project[];
 }
 
 const props = defineProps<Props>();
@@ -53,6 +54,7 @@ const form = useForm({
     start_date: '',
     due_date: '',
     tags: [] as Tag[], // Explicitly type as Tag[]
+    parent_id: '',
 })
 
 // Create a local ref for tags
@@ -150,6 +152,28 @@ const addTag = (newTagName: string) => {
                                 </SelectContent>
                             </Select>
                             <InputError class="mt-2" :message="form.errors.assigned_user_id" />
+                        </div>
+
+                        <div>
+                            <Label for="parent_id">Parent Project</Label>
+                            <Select v-model="form.parent_id">
+                                <SelectTrigger class="mt-1">
+                                    <SelectValue placeholder="Select a project" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Projects</SelectLabel>
+                                        <SelectItem
+                                            v-for="project in props.projects"
+                                            :key="project.id"
+                                            :value="String(project.id)"
+                                        >
+                                            {{ project.title }}
+                                        </SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                            <InputError class="mt-2" :message="form.errors.parent_id" />
                         </div>
 
                         <div>

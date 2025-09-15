@@ -46,9 +46,7 @@ class ProjectUpdate extends Model
      *
      * @var array
      */
-    protected $appends = [
-        'status_label',
-    ];
+    protected $appends = [];
 
     /**
      * Get the project associated with the project update.
@@ -72,9 +70,21 @@ class ProjectUpdate extends Model
     protected function statusLabel(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->status instanceof Status
-                ? $this->status->getLabel()
-                : Status::from($this->status)->getLabel(),
+            get: fn() => $this->status?->getLabel()
         );
+    }
+
+    /**
+     * Dynamically add appends
+     */
+    public function getArrayableAppends(): array
+    {
+        $appends = parent::getArrayableAppends();
+
+        if ($this->status !== null) {
+            $appends[] = 'status_label';
+        }
+
+        return $appends;
     }
 }

@@ -26,7 +26,7 @@ class ProjectRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'priority' => ['required', Rule::enum(Priority::class)],
@@ -49,6 +49,12 @@ class ProjectRequest extends FormRequest
             'tags' => ['nullable', 'array', 'min:1'],
             'tags.*' => ['string', 'max:255', 'distinct'],
         ];
+
+        if ($this->project) {
+            $rules['parent_id'][] = Rule::notIn([$this->project->id]);
+        }
+
+        return $rules;
     }
 
     /**

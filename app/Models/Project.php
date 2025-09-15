@@ -56,10 +56,7 @@ class Project extends Model
      *
      * @var array
      */
-    protected $appends = [
-        'priority_label',
-        'current_status_label',
-    ];
+    protected $appends = [];
 
     /**
      * Get the project updates associated with the project.
@@ -115,9 +112,7 @@ class Project extends Model
     protected function priorityLabel(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->priority instanceof Priority
-                ? $this->priority->getLabel()
-                : Priority::from($this->priority)->getLabel(),
+            get: fn() => $this->priority?->getLabel()
         );
     }
 
@@ -127,9 +122,25 @@ class Project extends Model
     protected function currentStatusLabel(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->current_status instanceof Status
-                ? $this->current_status->getLabel()
-                : Status::from($this->current_status)->getLabel(),
+            get: fn() => $this->current_status?->getLabel()
         );
+    }
+
+    /**
+     * Dynamically add appends
+     */
+    public function getArrayableAppends(): array
+    {
+        $appends = parent::getArrayableAppends();
+
+        if ($this->priority !== null) {
+            $appends[] = 'priority_label';
+        }
+
+        if ($this->current_status !== null) {
+            $appends[] = 'current_status_label';
+        }
+
+        return $appends;
     }
 }

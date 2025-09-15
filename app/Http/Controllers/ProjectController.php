@@ -19,7 +19,8 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::latest()
-            ->with(['reporterUser', 'assignedUser', 'tags'])
+            ->with(['reporterUser', 'assignedUser', 'tags', 'parent'])
+            ->whereNull('parent_id')
             ->paginate(10);
 
         return Inertia::render('projects/Index', [
@@ -36,6 +37,7 @@ class ProjectController extends Controller
             'priorities' => Priority::asArray(),
             'users' => User::all(['id', 'name']),
             'tags' => Tag::all(['id', 'name']),
+            'projects' => Project::all(['id', 'title']),
         ]);
     }
 
@@ -73,7 +75,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load(['tags', 'reporterUser', 'assignedUser']);
+        $project->load(['tags', 'reporterUser', 'assignedUser', 'parent', 'children']);
 
         $projectUpdates = $project->projectUpdates()
             ->latest()
@@ -99,6 +101,7 @@ class ProjectController extends Controller
             'statuses' => Status::asArray(),
             'users' => User::all(['id', 'name']),
             'tags' => Tag::all(['id', 'name']),
+            'projects' => Project::where('id', '!=', $project->id)->get(['id', 'title']),
         ]);
     }
 
