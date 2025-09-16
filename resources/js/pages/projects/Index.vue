@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { debounce } from 'lodash';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { BreadcrumbItem, PaginationLink, Project } from '@/types';
 import { index, show, create } from '@/routes/projects';
@@ -23,9 +25,28 @@ interface Props {
         data: Project[];
         links: PaginationLink[];
     };
+    filters: {
+        search: string;
+    };
 }
 
 const props = defineProps<Props>();
+
+const search = ref(props.filters.search);
+
+watch(
+    search,
+    debounce((value: string) => {
+        router.get(
+            index().url,
+            { search: value },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    }, 300),
+);
 </script>
 
 <template>
@@ -37,9 +58,17 @@ const props = defineProps<Props>();
                 <div class="overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-bold mb-4 mt-6">Projects</h2>
-                        <Link :href="create().url">
-                            <Button>Create Project</Button>
-                        </Link>
+                        <div class="flex items-center space-x-4">
+                            <input
+                                v-model="search"
+                                type="text"
+                                placeholder="Search..."
+                                class="px-4 py-2 border rounded-md"
+                            />
+                            <Link :href="create().url">
+                                <Button>Create Project</Button>
+                            </Link>
+                        </div>
                     </div>
 
                     <Pagination :links="props.projects.links" />

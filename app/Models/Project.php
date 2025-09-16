@@ -143,4 +143,21 @@ class Project extends Model
 
         return $appends;
     }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<Project>  $query
+     * @param  array<string, string>  $filters
+     * @return \Illuminate\Database\Eloquent\Builder<Project>
+     */
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['search'] ?? false, function ($query, $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            });
+        });
+
+        return $query;
+    }
 }

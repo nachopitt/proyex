@@ -21,10 +21,13 @@ class ProjectController extends Controller
         $projects = Project::latest()
             ->with(['reporterUser', 'assignedUser', 'tags', 'parent'])
             ->whereNull('parent_id')
-            ->paginate(10);
+            ->filter(request(['search']))
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('projects/Index', [
             'projects' => $projects,
+            'filters' => request()->only('search'),
         ]);
     }
 
