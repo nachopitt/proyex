@@ -37,9 +37,10 @@ const search = ref(props.filters.search);
 watch(
     search,
     debounce((value: string) => {
+        const query = value ? { search: value } : {};
         router.get(
             index().url,
-            { search: value },
+            query,
             {
                 preserveState: true,
                 replace: true,
