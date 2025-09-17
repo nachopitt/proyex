@@ -26,6 +26,7 @@ return new class extends Migration
                     ->nullable();
                 $table->timestamp('updated_at')
                     ->nullable();
+                $table->primary('id', null);
                 $table->index('project_id', 'fk_project_tag_projects1_idx');
                 $table->index('tag_id', 'fk_project_tag_tags1_idx');
                 $table->foreign('project_id', 'fk_project_tag_projects1')
@@ -53,6 +54,7 @@ return new class extends Migration
                     ->nullable();
                 $table->timestamp('deleted_at')
                     ->nullable();
+                $table->primary('id', null);
                 $table->index('project_id', 'fk_project_updates_projects1_idx');
                 $table->index('updater_user_id', 'fk_project_updates_users1_idx');
                 $table->foreign('project_id', 'fk_project_updates_projects1')
@@ -93,9 +95,11 @@ return new class extends Migration
                     ->nullable();
                 $table->timestamp('deleted_at')
                     ->nullable();
+                $table->primary('id', null);
                 $table->index('parent_id', 'fk_projects_projects1_idx');
                 $table->index('reporter_user_id', 'fk_projects_users1_idx');
                 $table->index('assigned_user_id', 'fk_projects_users2_idx');
+                $table->fullText(['title', 'description'], 'projects_title_description_FULLTEXT');
                 $table->foreign('parent_id', 'fk_projects_projects1')
                     ->references('id')
                     ->on('projects')->onDelete('no action')->onUpdate('no action');
@@ -117,6 +121,8 @@ return new class extends Migration
                     ->nullable();
                 $table->timestamp('deleted_at')
                     ->nullable();
+                $table->primary('id', null);
+                $table->unique('name', 'name_UNIQUE');
             });
             Schema::create('user_profiles', function (Blueprint $table) {
                 $table->bigInteger('id')
@@ -132,7 +138,9 @@ return new class extends Migration
                     ->nullable();
                 $table->timestamp('updated_at')
                     ->nullable();
+                $table->primary('id', null);
                 $table->index('user_id', 'fk_user_profiles_users1_idx');
+                $table->unique('user_id', 'user_id_UNIQUE');
                 $table->foreign('user_id', 'fk_user_profiles_users1')
                     ->references('id')
                     ->on('users')->onDelete('no action')->onUpdate('no action');
@@ -148,6 +156,7 @@ return new class extends Migration
                     ->nullable();
                 $table->timestamp('updated_at')
                     ->nullable();
+                $table->primary('id', null);
                 $table->index('user_id', 'fk_user_roles_users1_idx');
                 $table->foreign('user_id', 'fk_user_roles_users1')
                     ->references('id')

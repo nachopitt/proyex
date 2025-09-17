@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a7de643f51a3a56288d95557e61b60ca",
+    "content-hash": "a1c977aa2b230908f9db6d2cd83b9edc",
     "packages": [
         {
             "name": "brick/math",
@@ -6835,16 +6835,16 @@
         },
         {
             "name": "nachopitt/migrations",
-            "version": "v0.5.4",
+            "version": "v0.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nachopitt/migrations.git",
-                "reference": "d40080e91729800c313bc9f3b73e5e7a33999a3d"
+                "reference": "9bd2ba59a74349a3d5c58fd9ee82f26d1c743afe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nachopitt/migrations/zipball/d40080e91729800c313bc9f3b73e5e7a33999a3d",
-                "reference": "d40080e91729800c313bc9f3b73e5e7a33999a3d",
+                "url": "https://api.github.com/repos/nachopitt/migrations/zipball/9bd2ba59a74349a3d5c58fd9ee82f26d1c743afe",
+                "reference": "9bd2ba59a74349a3d5c58fd9ee82f26d1c743afe",
                 "shasum": ""
             },
             "require": {
@@ -6878,9 +6878,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nachopitt/migrations/issues",
-                "source": "https://github.com/nachopitt/migrations/tree/v0.5.4"
+                "source": "https://github.com/nachopitt/migrations/tree/v0.6.0"
             },
-            "time": "2025-09-08T13:56:08+00:00"
+            "time": "2025-09-17T00:53:42+00:00"
         },
         {
             "name": "nunomaduro/collision",
