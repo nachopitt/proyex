@@ -67,13 +67,30 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <div v-if="project.children && project.children.length > 0" class="mt-4">
                 <h3 class="text-lg font-medium">Children projects</h3>
-                <ul>
-                    <li v-for="child in project.children" :key="child.id">
-                        <Link :href="show(child.id).url" class="text-sm font-semibold hover:underline">
-                            {{ child.title }}
-                        </Link>
-                    </li>
-                </ul>
+                <div class="mt-6 overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                    <table class="min-w-full divide-y divide-gray-200 bg-white responsive-table">
+                        <thead class="bg-gray-50 hidden sm:table-header-group">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 block sm:table-row-group">
+                            <tr v-for="child in project.children" :key="child.id" class="block sm:table-row border-b sm:border-none">
+                                <td data-label="Title" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 block sm:table-cell">
+                                    <Link :href="show(child.id).url" class="hover:underline">
+                                        {{ child.title }}
+                                    </Link>
+                                </td>
+                                <td data-label="Current Status" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 block sm:table-cell">{{ child.current_status_label }}</td>
+                                <td data-label="Priority" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 block sm:table-cell">{{ child.priority_label }}</td>
+                                <td data-label="Due Date" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 block sm:table-cell">{{ child.due_date }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="mt-4">
@@ -159,3 +176,32 @@ const breadcrumbs: BreadcrumbItem[] = [
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+/* Responsive table styles */
+@media (max-width: 639px) { /* Tailwind's 'sm' breakpoint is 640px */
+    .responsive-table td {
+        display: flex; /* Use flexbox for better alignment of label and content */
+        flex-direction: column; /* Stack label and content vertically */
+        align-items: flex-start; /* Align content to the start */
+        padding-left: 1rem; /* Ensure consistent padding */
+        padding-right: 1rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        /* Removed border-bottom from td */
+    }
+
+    .responsive-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #6b7280; /* A slightly muted color for the label */
+        margin-bottom: 0.25rem; /* Small space between label and value */
+        width: 100%; /* Allow label to take full width */
+    }
+
+    /* The tr already has border-b, so this might not be needed or might conflict */
+    /* .responsive-table tr:last-child td {
+        border-bottom: none;
+    } */
+}
+</style>
