@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Enums\Priority;
 use App\Enums\Status;
+use App\Filters\ProjectFilter;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
 use App\Models\Tag;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -16,18 +18,21 @@ class ProjectController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $projects = Project::latest()
             ->with(['reporterUser', 'assignedUser', 'tags', 'parent'])
             ->whereNull('parent_id')
-            ->filter(request(['search']))
+            ->filter(new ProjectFilter($request))
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('projects/Index', [
             'projects' => $projects,
-            'filters' => request()->only('search'),
+            'filters' => $request->all(),
+            'statuses' => Status::asArray(),
+            'priorities' => Priority::asArray(),
+            'users' => User::all(['id', 'name']),
         ]);
     }
 

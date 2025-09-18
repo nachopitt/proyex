@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import { debounce } from 'lodash';
+import { debounce, pickBy } from 'lodash';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem, PaginationLink, Project } from '@/types';
+import { BreadcrumbItem, PaginationLink, Project, User } from '@/types';
 import { index, show, create } from '@/routes/projects';
 import { dashboard } from '@/routes';
 import { Button } from '@/components/ui/button'
@@ -27,27 +27,36 @@ interface Props {
     };
     filters: {
         search: string;
+        status: string;
+        priority: string;
+        assignee: string;
     };
+    statuses: Status[];
+    priorities: Priority[];
+    users: User[];
 }
 
 const props = defineProps<Props>();
 
 const search = ref(props.filters.search);
+const status = ref(props.filters.status);
+const priority = ref(props.filters.priority);
+const assignee = ref(props.filters.assignee);
 
-watch(
-    search,
-    debounce((value: string) => {
-        const query = value ? { search: value } : {};
-        router.get(
-            index().url,
-            query,
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    }, 300),
-);
+watch([search, status, priority, assignee], debounce(() => {
+    const query = pickBy({
+        search: search.value,
+        status: status.value,
+        priority: priority.value,
+        assignee: assignee.value,
+    });
+
+    router.get(index().url, query, {
+        preserveState: true,
+        replace: true,
+    });
+}, 300));
+
 </script>
 
 <template>
@@ -57,15 +66,33 @@ watch(
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center flex-wrap gap-4">
                         <h2 class="text-2xl font-bold mb-4 mt-6">Projects</h2>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2 flex-wrap">
                             <input
                                 v-model="search"
                                 type="text"
                                 placeholder="Search..."
-                                class="px-4 py-2 border rounded-md"
+                                class="px-4 py-2 border rounded-md dark:bg-transparent"
                             />
+                            <select v-model="status" class="px-4 py-2 border rounded-md dark:bg-transparent">
+                                <option value="">All Statuses</option>
+                                <option v-for="item in statuses" :key="item.id" :value="item.id">
+                                    {{ item.name }}
+                                </option>
+                            </select>
+                            <select v-model="priority" class="px-4 py-2 border rounded-md dark:bg-transparent">
+                                <option value="">All Priorities</option>
+                                <option v-for="item in priorities" :key="item.id" :value="item.id">
+                                    {{ item.name }}
+                                </option>
+                            </select>
+                            <select v-model="assignee" class="px-4 py-2 border rounded-md dark:bg-transparent">
+                                <option value="">All Assignees</option>
+                                <option v-for="user in users" :key="user.id" :value="user.id">
+                                    {{ user.name }}
+                                </option>
+                            </select>
                             <Link :href="create().url">
                                 <Button>Create Project</Button>
                             </Link>
@@ -105,11 +132,8 @@ watch(
                     </div>
 
                     <div v-else class="text-center py-12">
-                        <h3 class="text-lg font-medium">No projects yet</h3>
-                        <p class="text-sm text-muted-foreground">Create one to get started!</p>
-                        <Link :href="create().url" class="mt-4 inline-block">
-                            <Button>Create Project</Button>
-                        </Link>
+                        <h3 class="text-lg font-medium">No projects found</h3>
+                        <p class="text-sm text-muted-foreground">Try adjusting your filters.</p>
                     </div>
 
                     <Pagination :links="props.projects.links" />

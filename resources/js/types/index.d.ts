@@ -82,6 +82,11 @@ export interface Tag {
     name: string;
 }
 
+export interface EnumOption {
+    id: string;
+    name: string;
+}
+
 export interface PaginationLink {
     url: string | null;
     label: string;

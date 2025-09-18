@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\Priority;
 use App\Enums\Status;
+use App\Filters\ProjectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -149,12 +151,8 @@ class Project extends Model
      * @param  array<string, string>  $filters
      * @return \Illuminate\Database\Eloquent\Builder<Project>
      */
-    public function scopeFilter($query, array $filters)
+    public function scopeFilter(Builder $query, ProjectFilter $filter): Builder
     {
-        $query->when($filters['search'] ?? false, function ($query, $search) {
-            $query->whereFullText(['title', 'description'], $search . '*', ['mode' => 'boolean']);
-        });
-
-        return $query;
+        return $filter->apply($query);
     }
 }
