@@ -25,7 +25,15 @@ class ProjectController extends Controller
         // If a search term is provided, get the matching keys from Scout
         // and constrain the Eloquent query to those keys.
         if ($request->filled('search')) {
-            $keys = Project::search($request->input('search') . '*')->keys();
+            $searchTerm = $request->input('search');
+
+            // Split search term into words and prepend '+' for required terms (AND logic),
+            // matching the logic from your original ProjectFilter.
+            $searchQuery = collect(explode(' ', $searchTerm))
+                ->map(fn($term) => strlen($term) >= 3 ? '+' . $term . '*' : $term . '*')
+                ->implode(' ');
+
+            $keys = Project::search($searchQuery)->keys();
             $query->whereIn('id', $keys);
         }
 
