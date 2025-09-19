@@ -57,6 +57,7 @@ return new class extends Migration
                 $table->primary('id', null);
                 $table->index('project_id', 'fk_project_updates_projects1_idx');
                 $table->index('updater_user_id', 'fk_project_updates_users1_idx');
+                $table->fullText('description', 'project_updates_description_FULLTEXT');
                 $table->foreign('project_id', 'fk_project_updates_projects1')
                     ->references('id')
                     ->on('projects')->onDelete('no action')->onUpdate('no action');
