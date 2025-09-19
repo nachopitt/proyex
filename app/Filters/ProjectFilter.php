@@ -52,7 +52,12 @@ class ProjectFilter
 
     protected function search(Builder $query, string $search): Builder
     {
-        return $query->whereFullText(['title', 'description'], $search . '*', ['mode' => 'boolean']);
+        return $query->where(function (Builder $q) use ($search) {
+            $q->whereFullText(['title', 'description'], $search . '*', ['mode' => 'boolean'])
+                ->orWhereHas('projectUpdates', function (Builder $q) use ($search) {
+                    $q->whereFullText('description', $search . '*', ['mode' => 'boolean']);
+                });
+        });
     }
 
     protected function status(Builder $query, string $status): Builder
