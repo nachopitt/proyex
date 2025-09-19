@@ -52,10 +52,20 @@ class ProjectFilter
 
     protected function search(Builder $query, string $search): Builder
     {
-        return $query->where(function (Builder $q) use ($search) {
-            $q->whereFullText(['title', 'description'], $search . '*', ['mode' => 'boolean'])
-                ->orWhereHas('projectUpdates', function (Builder $q) use ($search) {
-                    $q->whereFullText('description', $search . '*', ['mode' => 'boolean']);
+        // Assume a minimum word length of 3 for the '+' operator to avoid issues with stopwords
+        $minWordLen = 3;
+
+        $searchQuery = collect(explode(' ', $search))->map(function ($term) use ($minWordLen) {
+            if (strlen($term) >= $minWordLen) {
+                return '+' . $term . '*'; // Must be present
+            }
+            return $term . '*'; // Optional
+        })->implode(' ');
+
+        return $query->where(function (Builder $q) use ($searchQuery) {
+            $q->whereFullText(['title', 'description'], $searchQuery, ['mode' => 'boolean'])
+                ->orWhereHas('projectUpdates', function (Builder $q) use ($searchQuery) {
+                    $q->whereFullText('description', $searchQuery, ['mode' => 'boolean']);
                 });
         });
     }
