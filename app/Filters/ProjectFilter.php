@@ -63,7 +63,8 @@ class ProjectFilter
         })->implode(' ');
 
         return $query->where(function (Builder $q) use ($searchQuery) {
-            $q->whereFullText(['title', 'description'], $searchQuery, ['mode' => 'boolean'])
+            $q->whereFullText('title', $searchQuery, ['mode' => 'boolean'])
+                ->orWhereFullText('description', $searchQuery, ['mode' => 'boolean'])
                 ->orWhereHas('projectUpdates', function (Builder $q) use ($searchQuery) {
                     $q->whereFullText('description', $searchQuery, ['mode' => 'boolean']);
                 });

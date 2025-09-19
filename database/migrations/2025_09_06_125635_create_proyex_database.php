@@ -100,7 +100,8 @@ return new class extends Migration
                 $table->index('parent_id', 'fk_projects_projects1_idx');
                 $table->index('reporter_user_id', 'fk_projects_users1_idx');
                 $table->index('assigned_user_id', 'fk_projects_users2_idx');
-                $table->fullText(['title', 'description'], 'projects_title_description_FULLTEXT');
+                $table->fullText('title', 'projects_title_FULLTEXT');
+                $table->fullText('description', 'projects_description_FULLTEXT');
                 $table->foreign('parent_id', 'fk_projects_projects1')
                     ->references('id')
                     ->on('projects')->onDelete('no action')->onUpdate('no action');
