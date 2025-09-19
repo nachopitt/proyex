@@ -20,10 +20,19 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $projects = Project::latest()
+        $query = Project::query();
+
+        // If a search term is provided, get the matching keys from Scout
+        // and constrain the Eloquent query to those keys.
+        if ($request->filled('search')) {
+            $keys = Project::search($request->input('search') . '*')->keys();
+            $query->whereIn('id', $keys);
+        }
+
+        $projects = $query->latest()
             ->with(['reporterUser', 'assignedUser', 'tags', 'parent'])
             ->whereNull('parent_id')
-            ->filter(new ProjectFilter($request))
+            ->filter(new ProjectFilter($request)->except('search'))
             ->paginate(10)
             ->withQueryString();
 

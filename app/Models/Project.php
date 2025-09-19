@@ -13,13 +13,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Attributes\SearchUsingFullText;
+use Laravel\Scout\Searchable;
 
 class Project extends Model
 {
     /** @use HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
 
-    use SoftDeletes;
+    use SoftDeletes, Searchable;
 
     /**
      * The attributes that are mass assignable.
@@ -154,5 +156,30 @@ class Project extends Model
     public function scopeFilter(Builder $query, ProjectFilter $filter): Builder
     {
         return $filter->apply($query);
+    }
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    #[SearchUsingFullText(['title', 'description'], ['mode' => 'boolean'])]
+    public function toSearchableArray(): array
+    {
+        return [
+            'title' => $this->title,
+            'description' => $this->description,
+        ];
+    }
+
+    /**
+     * Modify the query used to retrieve models when making all of the models searchable.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<Project>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<Project>
+     */
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with('tags', 'assignedUser');
     }
 }

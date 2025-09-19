@@ -10,11 +10,29 @@ use Illuminate\Support\Carbon;
 
 class ProjectFilter
 {
+    protected Request $request;
     protected array $filters;
 
     public function __construct(Request $request)
     {
-        $this->filters = $request->all();
+        $this->request = $request;
+        $this->filters = $request->all(); // Default to all
+    }
+
+    public function only(...$keys): self
+    {
+        $this->filters = $this->request->only(
+            is_array($keys[0] ?? null) ? $keys[0] : $keys
+        );
+        return $this;
+    }
+
+    public function except(...$keys): self
+    {
+        $this->filters = $this->request->except(
+            is_array($keys[0] ?? null) ? $keys[0] : $keys
+        );
+        return $this;
     }
 
     public function apply(Builder $query): Builder
