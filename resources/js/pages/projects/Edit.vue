@@ -64,7 +64,7 @@ const form = useForm({
     start_date: props.project.start_date,
     due_date: props.project.due_date,
     tags: props.project.tags, // Initialize with Tag objects
-    parent_id: props.project.parent_id?.toString() ?? null,
+    parent_id: props.project.parent_id?.toString() ?? '',
 })
 
 // Create a local ref for tags

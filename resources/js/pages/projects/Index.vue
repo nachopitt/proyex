@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import { debounce, pickBy } from 'lodash';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BreadcrumbItem, PaginationLink, Project, User } from '@/types';
+import { BreadcrumbItem, PaginationLink, Priority, Project, Status, User } from '@/types';
 import { index, show, create } from '@/routes/projects';
 import { dashboard } from '@/routes';
 import { Button } from '@/components/ui/button'

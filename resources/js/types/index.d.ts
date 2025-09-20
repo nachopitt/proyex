@@ -64,6 +64,7 @@ export interface Project {
     project_updates: ProjectUpdate[];
     tags: Tag[];
     parent: Project | null;
+    parent_id: number | null;
     children: Project[];
 }
 
