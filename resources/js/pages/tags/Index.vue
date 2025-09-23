@@ -62,13 +62,13 @@ const deleteTag = (id: number) => {
                 <div class="overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <h2 class="text-2xl font-bold mb-4 mt-6">Tags</h2>
+                        <Link :href="create().url">
+                            <Button>Create Tag</Button>
+                        </Link>
                     </div>
 
                     <div class="flex items-center space-x-2 flex-wrap">
                         <Input v-model="search" placeholder="Search tags..." class="max-w-sm" />
-                        <Link :href="create().url">
-                            <Button>Create Tag</Button>
-                        </Link>
                     </div>
 
                     <Pagination :links="props.tags.links" class="mt-6"/>

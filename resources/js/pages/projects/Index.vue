@@ -69,13 +69,16 @@ watch([search, status, priority, assignee], debounce(() => {
                 <div class="overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
                     <div class="flex justify-between items-center flex-wrap gap-4">
                         <h2 class="text-2xl font-bold mb-4 mt-6">Projects</h2>
+                        <Link :href="create().url">
+                            <Button>Create Project</Button>
+                        </Link>
                     </div>
 
                     <div class="flex items-center space-x-2 flex-wrap">
                         <Input
                             v-model="search"
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search projects..."
                             class="max-w-sm"
                         />
                         <select v-model="status" class="h-9 px-4 py-2 border rounded-md dark:bg-transparent">
@@ -96,9 +99,6 @@ watch([search, status, priority, assignee], debounce(() => {
                                 {{ user.name }}
                             </option>
                         </select>
-                        <Link :href="create().url">
-                            <Button>Create Project</Button>
-                        </Link>
                     </div>
 
                     <Pagination :links="props.projects.links" class="mt-6" />
