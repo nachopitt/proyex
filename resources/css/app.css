@@ -170,3 +170,36 @@
     background-color: var(--background); /* Use the dark background color */
     color: var(--foreground); /* Use the dark foreground color */
 }
+
+/* Dark theme overrides for Vue Multiselect */
+.dark .multiselect__tags {
+    @apply border border-input bg-transparent;
+}
+
+.dark .multiselect__input {
+    @apply text-foreground placeholder:text-muted-foreground;
+    background-color: transparent;
+}
+
+.dark .multiselect__content-wrapper {
+    @apply border border-input bg-card;
+}
+
+.dark .multiselect__option--highlight {
+    background-color: var(--accent) !important;
+    color: var(--accent-foreground) !important;
+}
+
+.dark .multiselect__option--highlight::after {
+    background-color: var(--accent) !important;
+    color: var(--accent-foreground) !important;
+}
+
+.dark .multiselect__tag {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+}
+
+.dark .multiselect__tag-icon:hover {
+    background-color: var(--destructive);
+}
