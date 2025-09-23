@@ -5,17 +5,26 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTagRequest;
 use App\Http\Requests\UpdateTagRequest;
 use App\Models\Tag;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class TagController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request): Response
     {
+        $query = Tag::query();
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->input('search') . '%');
+        }
+
         return Inertia::render('tags/Index', [
-            'tags' => Tag::latest()->paginate(10),
+            'tags' => $query->latest()->paginate(10),
+            'filters' => $request->only(['search']),
         ]);
     }
 

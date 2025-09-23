@@ -165,3 +165,8 @@
         @apply bg-background text-foreground;
     }
 }
+
+.dark option {
+    background-color: var(--background); /* Use the dark background color */
+    color: var(--foreground); /* Use the dark foreground color */
+}

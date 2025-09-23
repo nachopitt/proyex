@@ -8,6 +8,7 @@ import { index, show, create } from '@/routes/projects';
 import { dashboard } from '@/routes';
 import { Button } from '@/components/ui/button'
 import Pagination from '@/components/ui/pagination/Pagination.vue';
+import Input from '@/components/ui/input/Input.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -68,38 +69,39 @@ watch([search, status, priority, assignee], debounce(() => {
                 <div class="overflow-hidden shadow-xl sm:rounded-lg p-6 pt-0">
                     <div class="flex justify-between items-center flex-wrap gap-4">
                         <h2 class="text-2xl font-bold mb-4 mt-6">Projects</h2>
-                        <div class="flex items-center space-x-2 flex-wrap">
-                            <input
-                                v-model="search"
-                                type="text"
-                                placeholder="Search..."
-                                class="px-4 py-2 border rounded-md dark:bg-transparent"
-                            />
-                            <select v-model="status" class="px-4 py-2 border rounded-md dark:bg-transparent">
-                                <option value="">All Statuses</option>
-                                <option v-for="item in statuses" :key="item.id" :value="item.id">
-                                    {{ item.name }}
-                                </option>
-                            </select>
-                            <select v-model="priority" class="px-4 py-2 border rounded-md dark:bg-transparent">
-                                <option value="">All Priorities</option>
-                                <option v-for="item in priorities" :key="item.id" :value="item.id">
-                                    {{ item.name }}
-                                </option>
-                            </select>
-                            <select v-model="assignee" class="px-4 py-2 border rounded-md dark:bg-transparent">
-                                <option value="">All Assignees</option>
-                                <option v-for="user in users" :key="user.id" :value="user.id">
-                                    {{ user.name }}
-                                </option>
-                            </select>
-                            <Link :href="create().url">
-                                <Button>Create Project</Button>
-                            </Link>
-                        </div>
                     </div>
 
-                    <Pagination :links="props.projects.links" />
+                    <div class="flex items-center space-x-2 flex-wrap">
+                        <Input
+                            v-model="search"
+                            type="text"
+                            placeholder="Search..."
+                            class="max-w-sm"
+                        />
+                        <select v-model="status" class="h-9 px-4 py-2 border rounded-md dark:bg-transparent">
+                            <option value="">All Statuses</option>
+                            <option v-for="item in statuses" :key="item.id" :value="item.id">
+                                {{ item.name }}
+                            </option>
+                        </select>
+                        <select v-model="priority" class="h-9 px-4 py-2 border rounded-md dark:bg-transparent">
+                            <option value="">All Priorities</option>
+                            <option v-for="item in priorities" :key="item.id" :value="item.id">
+                                {{ item.name }}
+                            </option>
+                        </select>
+                        <select v-model="assignee" class="h-9 px-4 py-2 border rounded-md dark:bg-transparent">
+                            <option value="">All Assignees</option>
+                            <option v-for="user in users" :key="user.id" :value="user.id">
+                                {{ user.name }}
+                            </option>
+                        </select>
+                        <Link :href="create().url">
+                            <Button>Create Project</Button>
+                        </Link>
+                    </div>
+
+                    <Pagination :links="props.projects.links" class="mt-6" />
 
                     <div v-if="props.projects.data.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                         <div v-for="project in props.projects.data" :key="project.id" class="border rounded-lg p-4 bg-gray-50 dark:bg-[#161615] flex flex-col justify-between">
@@ -136,7 +138,7 @@ watch([search, status, priority, assignee], debounce(() => {
                         <p class="text-sm text-muted-foreground">Try adjusting your filters.</p>
                     </div>
 
-                    <Pagination :links="props.projects.links" />
+                    <Pagination :links="props.projects.links" class="mt-6" />
                 </div>
             </div>
         </div>
