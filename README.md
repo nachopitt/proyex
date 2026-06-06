@@ -1,5 +1,111 @@
 # Proyex Project Setup
 
+## Local Development with Docker (Recommended)
+
+The entire development environment is managed by Docker and the Docker Compose CLI plugin. You do not need to install PHP, Composer, Node.js, or MySQL on your local machine.
+
+### 1. Prerequisites
+
+*   **Docker Desktop:** Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+*   **`.env` file:** Ensure you have a `.env` file. If not, copy the example file:
+    ```bash
+    cp .env.example .env
+    ```
+
+### 2. Environment Configuration
+
+For the Docker environment to connect to the services, you **must** update the following host entries in your `.env` file.
+
+Change these two lines:
+```dotenv
+DB_HOST=127.0.0.1
+REDIS_HOST=127.0.0.1
+```
+to this:
+```dotenv
+DB_HOST=db
+REDIS_HOST=redis
+```
+
+### 3. Development Environment Setup
+
+These commands will build the Docker images, install all dependencies, and prepare the database for the **development** environment.
+
+1.  **Build the Docker Images:**
+    ```bash
+    docker compose build
+    ```
+
+2.  **Start the Development Containers:**
+    ```bash
+    docker compose -f docker-compose.dev.yml up -d
+    ```
+
+3.  **Install Dependencies:**
+    Run `composer` and `npm` inside the `workspace` container. This will install the dependencies into your local `vendor` and `node_modules` directories, making them available to your IDE.
+    ```bash
+    docker compose -f docker-compose.dev.yml exec workspace composer install
+    docker compose -f docker-compose.dev.yml exec workspace npm install
+    ```
+
+4.  **Run Database Migrations:**
+    ```bash
+    docker compose -f docker-compose.dev.yml exec workspace php artisan migrate
+    ```
+
+### 4. Daily Development Workflow
+
+*   **To Start:** `docker compose -f docker-compose.dev.yml up -d`
+*   **To Stop:** `docker compose -f docker-compose.dev.yml down`
+*   **Run Artisan Commands:** Prepend `docker compose -f docker-compose.dev.yml exec workspace` to any `php artisan` command.
+    ```bash
+    # Example
+    docker compose -f docker-compose.dev.yml exec workspace php artisan cache:clear
+    ```
+*   **Access Your App:** [http://localhost:8080](http://localhost:8080)
+
+### 5. Production Environment
+
+The `docker-compose.yml` file is configured to build and run your application in a production-ready state. This is for simulating a production deployment locally or for use as a base for a real deployment.
+
+**Note:** In this environment, the application code is copied into the image, and there is no live-reloading.
+
+1.  **Configure `.env` for Production:**
+    Ensure your `.env` file is configured for production. Key values include:
+    ```dotenv
+    APP_ENV=production
+    APP_DEBUG=false
+    DB_HOST=db
+    REDIS_HOST=redis
+    ```
+
+2.  **Build and Start Containers:**
+    ```bash
+    docker compose up -d --build
+    ```
+
+3.  **Run Migrations and Other Commands:**
+    To run `artisan` commands, you must `exec` into the production `app` container. The `workspace` container is not used for the production environment.
+    ```bash
+    # Run database migrations
+    docker compose exec app php artisan migrate --force
+
+    # Example: Clear application cache
+    docker compose exec app php artisan config:cache
+    ```
+
+4.  **Access the Application:**
+    *   **URL:** [http://localhost](http://localhost) (uses the standard port 80).
+
+5.  **To Stop the Environment:**
+    ```bash
+    docker compose down
+    ```
+
+---
+
+## Manual Environment Setup (Alternative)
+
 This document outlines the steps to set up the Proyex project for local development on a new system.
 
 ## 1. Prerequisites
