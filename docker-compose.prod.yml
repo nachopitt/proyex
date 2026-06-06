@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/nachopitt/proyex-app:${IMAGE_TAG:-latest}
+    container_name: proyex-app
+    restart: unless-stopped
+    networks:
+      - proyex
+    depends_on:
+      - db
+      - redis
+
+  web:
+    image: ghcr.io/nachopitt/proyex-web:${IMAGE_TAG:-latest}
+    container_name: proyex-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - proyex
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8.0
+    container_name: proyex-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - proyex-mysql-data:/var/lib/mysql
+    networks:
+      - proyex
+
+  redis:
+    image: redis:alpine
+    container_name: proyex-redis
+    restart: unless-stopped
+    networks:
+      - proyex
+
+networks:
+  proyex:
+    driver: bridge
+
+volumes:
+  proyex-mysql-data:
+    driver: local

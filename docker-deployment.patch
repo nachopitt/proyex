@@ -1,0 +1,882 @@
+diff --git a/.github/workflows/deploy-on-release.yml b/.github/workflows/deploy-on-release.yml
+new file mode 100644
+index 0000000..adcf99e
+--- /dev/null
++++ b/.github/workflows/deploy-on-release.yml
+@@ -0,0 +1,70 @@
++name: Deploy on release
++
++on:
++  release:
++    types: [published]
++
++permissions:
++  contents: read
++  packages: write
++
++jobs:
++  build-and-push:
++    runs-on: ubuntu-latest
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Set up QEMU
++        uses: docker/setup-qemu-action@v2
++
++      - name: Set up Docker Buildx
++        uses: docker/setup-buildx-action@v2
++
++      - name: Log in to GHCR
++        uses: docker/login-action@v2
++        with:
++          registry: ghcr.io
++          username: ${{ github.actor }}
++          password: ${{ secrets.GITHUB_TOKEN }}
++
++      - name: Build and push app image
++        uses: docker/build-push-action@v4
++        with:
++          context: .
++          file: docker/php/Dockerfile
++          target: prod
++          push: true
++          tags: |
++            ghcr.io/${{ github.repository_owner }}/proyex-app:release-${{ github.event.release.tag_name }}
++            ghcr.io/${{ github.repository_owner }}/proyex-app:latest
++
++      - name: Build and push web image
++        uses: docker/build-push-action@v4
++        with:
++          context: ./docker/nginx
++          push: true
++          tags: |
++            ghcr.io/${{ github.repository_owner }}/proyex-web:release-${{ github.event.release.tag_name }}
++            ghcr.io/${{ github.repository_owner }}/proyex-web:latest
++
++  deploy:
++    needs: build-and-push
++    runs-on: ubuntu-latest
++    steps:
++      - name: Wait for registry
++        run: sleep 5
++
++      - name: Deploy to droplet via SSH
++        uses: appleboy/ssh-action@v0.1.7
++        with:
++          host: ${{ secrets.DROPLET_HOST }}
++          username: ${{ secrets.DROPLET_USER }}
++          port: ${{ secrets.DROPLET_SSH_PORT }}
++          key: ${{ secrets.DROPLET_SSH_KEY }}
++          script: |
++            set -e
++            cd /home/${{ secrets.DROPLET_USER }}/app || exit 0
++            docker compose pull || true
++            docker compose up -d --remove-orphans
++            docker image prune -f || true
+diff --git a/DEPLOYMENT.md b/DEPLOYMENT.md
+new file mode 100644
+index 0000000..10c9f2f
+--- /dev/null
++++ b/DEPLOYMENT.md
+@@ -0,0 +1,178 @@
++# Deployment Guide
++
++## Overview
++Proyex deploys automatically on GitHub release. The workflow builds Docker images, pushes them to GHCR, then SSHs your DigitalOcean droplet to pull and restart containers.
++
++## Prerequisites
++- GitHub repository: `github.com/nachopitt/proyex`
++- DigitalOcean droplet ($6/mo, North America)
++- SSH access to droplet
++
++## Setup
++
++### 1. Prepare DigitalOcean Droplet
++
++SSH into your droplet and install Docker:
++```bash
++sudo apt update && sudo apt install -y docker.io docker-compose-plugin
++sudo systemctl enable --now docker
++sudo usermod -aG docker $USER
++# log out and back in for group to take effect
++exit
++```
++
++Create app deployment directory:
++```bash
++mkdir -p ~/app
++cd ~/app
++```
++
++Copy production compose files into the droplet app directory and use the production override:
++
++```bash
++# on droplet (example)
++cp /path/to/repo/docker-compose.yml /home/<your-user>/app/
++cp /path/to/repo/docker-compose.prod.yml /home/<your-user>/app/
++
++cd /home/<your-user>/app
++# optional: set IMAGE_TAG in .env to a release tag (e.g. IMAGE_TAG=release-v1.0.0)
++docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
++docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
++```
++
++This ensures the droplet pulls published GHCR images rather than attempting local builds. You can set IMAGE_TAG in ~/app/.env to specify a release tag (e.g., IMAGE_TAG=release-v1.0.0); otherwise :latest is used.
++
++Create `.env` file with production credentials (never commit this):
++```bash
++cat > ~/app/.env <<EOF
++DB_DATABASE=proyex_prod
++DB_USERNAME=proyex_user
++DB_PASSWORD=your_secure_password_here
++DB_ROOT_PASSWORD=your_secure_root_password
++EOF
++chmod 600 ~/app/.env
++```
++
++Test that images can be pulled (they will fail to run until pushed from GitHub):
++```bash
++docker compose pull || echo "Images not yet in GHCR — this is normal before first release"
++```
++
++### 2. Generate SSH Deploy Key
++
++On your **local machine**:
++```bash
++ssh-keygen -t ed25519 -f ~/.ssh/proyex_deploy -C "GitHub Actions Deploy" -N ""
++```
++
++Add the public key to your droplet's authorized_keys:
++```bash
++ssh-copy-id -i ~/.ssh/proyex_deploy.pub your_user@your.droplet.ip
++```
++
++Verify:
++```bash
++ssh -i ~/.ssh/proyex_deploy your_user@your.droplet.ip "echo 'SSH key works'"
++```
++
++### 3. Add GitHub Secrets
++
++In your GitHub repo, go to **Settings > Secrets and variables > Actions > New repository secret** and add:
++
++| Secret | Value | Example |
++|--------|-------|---------|
++| DROPLET_HOST | Droplet IP address | `192.0.2.1` |
++| DROPLET_USER | SSH username on droplet | `root` or `deploy` |
++| DROPLET_SSH_KEY | Contents of `~/.ssh/proyex_deploy` (private key) | `-----BEGIN PRIVATE KEY-----...` |
++| DROPLET_SSH_PORT | (optional, defaults to 22) | `22` |
++
++**Important:** The private key file is sensitive — keep it safe and never commit it.
++
++### 4. Test Deployment
++
++1. Create a GitHub Release:
++   - Go to your repo
++   - Click **Releases** → **Draft a new release**
++   - Tag: `v1.0.0`
++   - Title: `Release 1.0.0`
++   - Click **Publish release**
++
++2. Watch the workflow:
++   - Go to **Actions** tab
++   - Click the "Deploy on release" workflow run
++   - Check **build-and-push** and **deploy** job logs
++
++3. On success, SSH into droplet and verify:
++   ```bash
++   docker compose ps
++   docker image ls | grep ghcr
++   ```
++
++## How It Works
++
++1. **Trigger:** You publish a GitHub release (v1.0.0, etc.)
++2. **Build:** GitHub Actions builds `app` and `web` images with Dockerfile targets
++3. **Push:** Images are tagged and pushed to GHCR (ghcr.io/nachopitt/proyex-app:latest, etc.)
++4. **Deploy:** GitHub Actions SSHs the droplet and runs:
++   - `docker compose pull` — fetches latest images from GHCR
++   - `docker compose up -d --remove-orphans` — starts/restarts containers
++   - `docker image prune -f` — cleans up old images
++
++## Troubleshooting
++
++**"SSH key permission denied"**
++- Verify key was added: `ssh-keygen -l -f ~/.ssh/proyex_deploy.pub`
++- Check droplet's `~/.ssh/authorized_keys` contains the public key
++- Verify SSH port is correct (default 22)
++
++**"Docker compose pull failed"**
++- Ensure images were pushed to GHCR (check Actions → build-and-push logs)
++- Verify GHCR images are public (or add auth to droplet)
++- SSH into droplet and test: `docker pull ghcr.io/nachopitt/proyex-app:latest`
++
++**"Permission denied while trying to connect"**
++- Verify DROPLET_SSH_KEY secret is the **private** key, not public
++- Check DROPLET_USER and DROPLET_HOST are correct
++- Test manually: `ssh -i ~/.ssh/proyex_deploy user@host`
++
++## Manual Deployment (if needed)
++
++SSH into droplet:
++```bash
++cd ~/app
++# Pull latest images
++docker compose pull
++
++# Restart containers
++docker compose up -d --remove-orphans
++
++# View logs
++docker compose logs -f
++```
++
++## Database Migrations
++
++If your release includes database migrations, add a step to the deploy workflow or run manually after deployment:
++```bash
++# On droplet
++cd ~/app
++docker compose exec -T app php artisan migrate --force
++```
++
++## Rollback
++
++If deployment fails, restore the previous version:
++```bash
++# On droplet
++cd ~/app
++docker compose down
++git pull origin <previous-tag-or-branch>
++docker compose up -d
++```
++
++Or pull a specific image tag:
++```bash
++docker compose down
++# Edit docker-compose.yml to use a specific tag (e.g., release-v1.0.0)
++docker compose up -d
++```
+diff --git a/README.md b/README.md
+index 39a62ba..fa56656 100644
+--- a/README.md
++++ b/README.md
+@@ -1,5 +1,111 @@
+ # Proyex Project Setup
+ 
++## Local Development with Docker (Recommended)
++
++The entire development environment is managed by Docker and the Docker Compose CLI plugin. You do not need to install PHP, Composer, Node.js, or MySQL on your local machine.
++
++### 1. Prerequisites
++
++*   **Docker Desktop:** Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
++*   **`.env` file:** Ensure you have a `.env` file. If not, copy the example file:
++    ```bash
++    cp .env.example .env
++    ```
++
++### 2. Environment Configuration
++
++For the Docker environment to connect to the services, you **must** update the following host entries in your `.env` file.
++
++Change these two lines:
++```dotenv
++DB_HOST=127.0.0.1
++REDIS_HOST=127.0.0.1
++```
++to this:
++```dotenv
++DB_HOST=db
++REDIS_HOST=redis
++```
++
++### 3. Development Environment Setup
++
++These commands will build the Docker images, install all dependencies, and prepare the database for the **development** environment.
++
++1.  **Build the Docker Images:**
++    ```bash
++    docker compose build
++    ```
++
++2.  **Start the Development Containers:**
++    ```bash
++    docker compose -f docker-compose.dev.yml up -d
++    ```
++
++3.  **Install Dependencies:**
++    Run `composer` and `npm` inside the `workspace` container. This will install the dependencies into your local `vendor` and `node_modules` directories, making them available to your IDE.
++    ```bash
++    docker compose -f docker-compose.dev.yml exec workspace composer install
++    docker compose -f docker-compose.dev.yml exec workspace npm install
++    ```
++
++4.  **Run Database Migrations:**
++    ```bash
++    docker compose -f docker-compose.dev.yml exec workspace php artisan migrate
++    ```
++
++### 4. Daily Development Workflow
++
++*   **To Start:** `docker compose -f docker-compose.dev.yml up -d`
++*   **To Stop:** `docker compose -f docker-compose.dev.yml down`
++*   **Run Artisan Commands:** Prepend `docker compose -f docker-compose.dev.yml exec workspace` to any `php artisan` command.
++    ```bash
++    # Example
++    docker compose -f docker-compose.dev.yml exec workspace php artisan cache:clear
++    ```
++*   **Access Your App:** [http://localhost:8080](http://localhost:8080)
++
++### 5. Production Environment
++
++The `docker-compose.yml` file is configured to build and run your application in a production-ready state. This is for simulating a production deployment locally or for use as a base for a real deployment.
++
++**Note:** In this environment, the application code is copied into the image, and there is no live-reloading.
++
++1.  **Configure `.env` for Production:**
++    Ensure your `.env` file is configured for production. Key values include:
++    ```dotenv
++    APP_ENV=production
++    APP_DEBUG=false
++    DB_HOST=db
++    REDIS_HOST=redis
++    ```
++
++2.  **Build and Start Containers:**
++    ```bash
++    docker compose up -d --build
++    ```
++
++3.  **Run Migrations and Other Commands:**
++    To run `artisan` commands, you must `exec` into the production `app` container. The `workspace` container is not used for the production environment.
++    ```bash
++    # Run database migrations
++    docker compose exec app php artisan migrate --force
++
++    # Example: Clear application cache
++    docker compose exec app php artisan config:cache
++    ```
++
++4.  **Access the Application:**
++    *   **URL:** [http://localhost](http://localhost) (uses the standard port 80).
++
++5.  **To Stop the Environment:**
++    ```bash
++    docker compose down
++    ```
++
++---
++
++## Manual Environment Setup (Alternative)
++
+ This document outlines the steps to set up the Proyex project for local development on a new system.
+ 
+ ## 1. Prerequisites
+diff --git a/docker-compose.dev.yml b/docker-compose.dev.yml
+new file mode 100644
+index 0000000..ad64d1d
+--- /dev/null
++++ b/docker-compose.dev.yml
+@@ -0,0 +1,96 @@
++
++services:
++  # PHP-FPM Application Service
++  app:
++    build:
++      context: .
++      dockerfile: docker/php/Dockerfile
++      target: dev
++    image: proyex/app:dev
++    container_name: proyex-app-dev
++    restart: unless-stopped
++    volumes:
++      - .:/var/www/html
++    networks:
++      - proyex
++    depends_on:
++      - db
++      - redis
++
++  # Workspace/CLI Service
++  workspace:
++    build:
++      context: .
++      dockerfile: docker/php/Dockerfile
++      target: workspace
++    image: proyex/workspace
++    container_name: proyex-workspace-dev
++    volumes:
++      - .:/var/www/html
++    networks:
++      - proyex
++    tty: true
++
++  # Nginx Web Server Service
++  web:
++    build: ./docker/nginx
++    image: proyex/web:dev
++    container_name: proyex-web-dev
++    restart: unless-stopped
++    ports:
++      - "8080:80"
++    networks:
++      - proyex
++    depends_on:
++      - app
++
++  # MySQL Database Service
++  db:
++    image: mysql:8.0
++    container_name: proyex-db-dev
++    restart: unless-stopped
++    ports:
++      - "3306:3306"
++    environment:
++      MYSQL_DATABASE: ${DB_DATABASE}
++      MYSQL_USER: ${DB_USERNAME}
++      MYSQL_PASSWORD: ${DB_PASSWORD}
++      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
++    volumes:
++      - proyex-mysql-data:/var/lib/mysql
++    networks:
++      - proyex
++
++  # Redis Service
++  redis:
++    image: redis:alpine
++    container_name: proyex-redis-dev
++    restart: unless-stopped
++    ports:
++      - "6379:6379"
++    networks:
++      - proyex
++
++  # Vite Frontend Development Service
++  vite:
++    build:
++      context: .
++      dockerfile: docker/php/Dockerfile
++      target: dev # This target has node and npm
++    image: proyex/vite
++    container_name: proyex-vite-dev
++    volumes:
++      - .:/var/www/html
++    ports:
++      - "5173:5173"
++    networks:
++      - proyex
++    command: ["npm", "run", "dev", "--", "--host"]
++
++networks:
++  proyex:
++    driver: bridge
++
++volumes:
++  proyex-mysql-data:
++    driver: local
+diff --git a/docker-compose.prod.yml b/docker-compose.prod.yml
+new file mode 100644
+index 0000000..7037b8a
+--- /dev/null
++++ b/docker-compose.prod.yml
+@@ -0,0 +1,52 @@
++version: '3.8'
++
++services:
++  app:
++    image: ghcr.io/nachopitt/proyex-app:${IMAGE_TAG:-latest}
++    container_name: proyex-app
++    restart: unless-stopped
++    networks:
++      - proyex
++    depends_on:
++      - db
++      - redis
++
++  web:
++    image: ghcr.io/nachopitt/proyex-web:${IMAGE_TAG:-latest}
++    container_name: proyex-web
++    restart: unless-stopped
++    ports:
++      - "80:80"
++    networks:
++      - proyex
++    depends_on:
++      - app
++
++  db:
++    image: mysql:8.0
++    container_name: proyex-db
++    restart: unless-stopped
++    environment:
++      MYSQL_DATABASE: ${DB_DATABASE}
++      MYSQL_USER: ${DB_USERNAME}
++      MYSQL_PASSWORD: ${DB_PASSWORD}
++      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
++    volumes:
++      - proyex-mysql-data:/var/lib/mysql
++    networks:
++      - proyex
++
++  redis:
++    image: redis:alpine
++    container_name: proyex-redis
++    restart: unless-stopped
++    networks:
++      - proyex
++
++networks:
++  proyex:
++    driver: bridge
++
++volumes:
++  proyex-mysql-data:
++    driver: local
+diff --git a/docker-compose.yml b/docker-compose.yml
+new file mode 100644
+index 0000000..e630150
+--- /dev/null
++++ b/docker-compose.yml
+@@ -0,0 +1,60 @@
++
++services:
++  # PHP-FPM Application Service
++  app:
++    build:
++      context: .
++      dockerfile: docker/php/Dockerfile
++      target: prod
++    image: ghcr.io/nachopitt/proyex-app:latest
++    container_name: proyex-app
++    restart: unless-stopped
++    networks:
++      - proyex
++    depends_on:
++      - db
++      - redis
++
++  # Nginx Web Server Service
++  web:
++    build: ./docker/nginx
++    image: ghcr.io/nachopitt/proyex-web:latest
++    container_name: proyex-web
++    restart: unless-stopped
++    ports:
++      - "80:80"
++    networks:
++      - proyex
++    depends_on:
++      - app
++
++  # MySQL Database Service
++  db:
++    image: mysql:8.0
++    container_name: proyex-db
++    restart: unless-stopped
++    environment:
++      MYSQL_DATABASE: ${DB_DATABASE}
++      MYSQL_USER: ${DB_USERNAME}
++      MYSQL_PASSWORD: ${DB_PASSWORD}
++      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
++    volumes:
++      - proyex-mysql-data:/var/lib/mysql
++    networks:
++      - proyex
++
++  # Redis Service
++  redis:
++    image: redis:alpine
++    container_name: proyex-redis
++    restart: unless-stopped
++    networks:
++      - proyex
++
++networks:
++  proyex:
++    driver: bridge
++
++volumes:
++  proyex-mysql-data:
++    driver: local
+diff --git a/docker/nginx/Dockerfile b/docker/nginx/Dockerfile
+new file mode 100644
+index 0000000..fd0cfc0
+--- /dev/null
++++ b/docker/nginx/Dockerfile
+@@ -0,0 +1,10 @@
++
++# syntax=docker/dockerfile:1
++
++FROM nginx:alpine
++
++# Remove the default nginx config
++RUN rm /etc/nginx/conf.d/default.conf
++
++# Copy our custom config
++COPY default.conf /etc/nginx/conf.d/
+diff --git a/docker/nginx/default.conf b/docker/nginx/default.conf
+new file mode 100644
+index 0000000..f5a05ff
+--- /dev/null
++++ b/docker/nginx/default.conf
+@@ -0,0 +1,35 @@
++
++server {
++    listen 80;
++    listen [::]:80;
++    server_name _;
++    root /var/www/html/public;
++
++    add_header X-Frame-Options "SAMEORIGIN";
++    add_header X-Content-Type-Options "nosniff";
++    add_header X-Powered-By "proyex" always;
++
++    index index.php;
++
++    charset utf-8;
++
++    location / {
++        try_files $uri $uri/ /index.php?$query_string;
++    }
++
++    location = /favicon.ico { access_log off; log_not_found off; }
++    location = /robots.txt  { access_log off; log_not_found off; }
++
++    error_page 404 /index.php;
++
++    location ~ \.php$ {
++        fastcgi_pass app:9000;
++        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
++        include fastcgi_params;
++        fastcgi_hide_header X-Powered-By;
++    }
++
++    location ~ /\.(?!well-known).* {
++        deny all;
++    }
++}
+diff --git a/docker/php/Dockerfile b/docker/php/Dockerfile
+new file mode 100644
+index 0000000..30820fe
+--- /dev/null
++++ b/docker/php/Dockerfile
+@@ -0,0 +1,162 @@
++# syntax=docker/dockerfile:1
++
++# =============================================================================
++# Stage 1: composer_install
++# Installs PHP Composer dependencies
++# =============================================================================
++FROM composer:latest AS composer_install
++WORKDIR /app
++COPY composer.json composer.lock ./
++RUN composer install --no-dev --no-autoloader --optimize-autoloader
++
++# =============================================================================
++# Stage 2: php_wayfinder_build
++# Prepares PHP environment, copies application code, and generates Wayfinder files.
++# This stage ensures PHP is available for artisan commands.
++# =============================================================================
++FROM php:8.4-fpm-alpine AS php_wayfinder_build
++WORKDIR /var/www/html
++
++# Install system dependencies required for Node.js and PHP extensions
++RUN apk add --no-cache \
++    bash \
++    git \
++    libzip-dev \
++    mysql-dev \
++    libpng-dev \
++    jpeg-dev \
++    freetype-dev \
++    libwebp-dev \
++    zlib-dev \
++    icu-dev \
++    libtool \
++    nodejs \
++    npm
++
++# Install common PHP extensions for Laravel
++RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
++    && docker-php-ext-install -j$(nproc) \
++    gd \
++    intl \
++    pcntl \
++    pdo_mysql \
++    zip \
++    exif
++
++# Install Redis
++RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
++    && pecl install redis \
++    && docker-php-ext-enable redis \
++    && apk del .build-deps
++
++# Copy application source code
++COPY . .
++
++# Copy Composer dependencies from the first stage
++COPY --from=composer_install /app/vendor /var/www/html/vendor
++
++# Ensure .env is present for Artisan commands (even a minimal one)
++# We'll copy .env.example and generate a key.
++COPY .env.example .env
++RUN php artisan key:generate
++
++# Clear caches and run Wayfinder generation
++RUN php artisan optimize:clear
++
++# =============================================================================
++# Stage 3: node_build
++# Builds frontend assets with Vite.
++# =============================================================================
++FROM node:lts-alpine AS node_build
++WORKDIR /var/www/html
++
++# Copy application source code (including the Wayfinder generated files from the previous stage)
++COPY . .
++
++# Copy Composer dependencies (if npm scripts need access to vendor/autoload.php for some reason)
++COPY --from=composer_install /app/vendor /var/www/html/vendor
++
++# Install Node.js dependencies
++RUN npm ci
++
++# Run Vite build
++RUN npm run build
++
++# =============================================================================
++# Final Stage: prod (Production image)
++# Combines necessary artifacts for a lean production image.
++# =============================================================================
++FROM php:8.4-fpm-alpine AS prod
++WORKDIR /var/www/html
++
++# Install system dependencies for runtime (minimal)
++RUN apk add --no-cache \
++    bash \
++    git \
++    libzip-dev \
++    mysql-client \
++    libpng \
++    jpeg \
++    freetype \
++    libwebp \
++    zlib \
++    icu-libs \
++    libtool-libs 
++
++# Install common PHP extensions for Laravel (runtime)
++RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
++    && docker-php-ext-install -j$(nproc) \
++    gd \
++    intl \
++    pcntl \
++    pdo_mysql \
++    zip \
++    exif
++
++# Install Redis (runtime)
++RUN pecl install redis && docker-php-ext-enable redis
++
++# Copy application source code
++COPY . .
++
++# Copy Composer dependencies from the composer_install stage
++COPY --from=composer_install /app/vendor /var/www/html/vendor
++
++# Copy built frontend assets from the node_build stage
++COPY --from=node_build /var/www/html/public/build /var/www/html/public/build
++
++# Copy the generated Wayfinder files from the php_wayfinder_build stage
++# Assuming Wayfinder generates into resources/js/wayfinder, actions, routes
++COPY --from=php_wayfinder_build /var/www/html/resources/js/wayfinder /var/www/html/resources/js/wayfinder
++COPY --from=php_wayfinder_build /var/www/html/resources/js/actions /var/www/html/resources/js/actions
++COPY --from=php_wayfinder_build /var/www/html/resources/js/routes /var/www/html/resources/js/routes
++
++# Generate the autoloader and optimize
++RUN composer dump-autoload --optimize --no-dev
++
++# Set permissions for storage and cache
++RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
++
++# Expose port 9000 and start php-fpm server
++EXPOSE 9000
++CMD ["php-fpm"]
++
++# =============================================================================
++# Development Stage
++# =============================================================================
++# This stage is for the FPM container in the development environment.
++# It adds Xdebug. IT DOES NOT COPY ANY APPLICATION CODE.
++FROM php:8.4-fpm-alpine AS dev
++
++# Install and configure Xdebug
++RUN pecl install xdebug && docker-php-ext-enable xdebug
++RUN echo "xdebug.mode=develop,debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
++    && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
++
++
++# =============================================================================
++# Workspace Stage
++# =============================================================================
++# This stage is for the workspace/CLI container.
++# It's based on the 'dev' image to ensure it has all the tools.
++FROM dev AS workspace
+\ No newline at end of file
+diff --git a/docker/php/entrypoint.sh b/docker/php/entrypoint.sh
+new file mode 100755
+index 0000000..3497935
+--- /dev/null
++++ b/docker/php/entrypoint.sh
+@@ -0,0 +1,48 @@
++#!/bin/sh
++set -e
++
++# Change to the application directory
++cd /var/www/html
++
++# 1. Environment setup
++# If .env doesn't exist, copy it from .env.example
++if [ ! -f ".env" ]; then
++    echo "Creating .env file..."
++    cp .env.example .env
++fi
++
++# 2. Generate App Key
++# Generate a new key only if one doesn't exist
++if [ -z "$(grep -E '^APP_KEY=' .env)" ] || [ "$(grep -E '^APP_KEY=' .env | cut -d '=' -f2-)" == "" ]; then
++    echo "Generating application key..."
++    php artisan key:generate
++else
++    echo "Application key already exists."
++fi
++
++# 3. Clear caches
++php artisan optimize:clear
++
++# 4. Wait for DB
++# Wait for the database to be ready
++until php artisan db:monitor --quiet; do
++  echo 'Waiting for database connection...'
++  sleep 5
++done
++echo "Database is ready."
++
++# 5. Run migrations and seeders
++echo "Running database migrations..."
++php artisan migrate --force
++
++echo "Running database seeder..."
++php artisan db:seed --force
++
++# 6. Generate Wayfinder types
++echo "Generating Wayfinder types..."
++php artisan wayfinder:generate --with-form
++
++echo "Startup script finished."
++
++# 7. Execute the main container command (CMD)
++exec "$@"

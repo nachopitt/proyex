@@ -1,0 +1,96 @@
+
+services:
+  # PHP-FPM Application Service
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: dev
+    image: proyex/app:dev
+    container_name: proyex-app-dev
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    networks:
+      - proyex
+    depends_on:
+      - db
+      - redis
+
+  # Workspace/CLI Service
+  workspace:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: workspace
+    image: proyex/workspace
+    container_name: proyex-workspace-dev
+    volumes:
+      - .:/var/www/html
+    networks:
+      - proyex
+    tty: true
+
+  # Nginx Web Server Service
+  web:
+    build: ./docker/nginx
+    image: proyex/web:dev
+    container_name: proyex-web-dev
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - proyex
+    depends_on:
+      - app
+
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: proyex-db-dev
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - proyex-mysql-data:/var/lib/mysql
+    networks:
+      - proyex
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: proyex-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - proyex
+
+  # Vite Frontend Development Service
+  vite:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: dev # This target has node and npm
+    image: proyex/vite
+    container_name: proyex-vite-dev
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "5173:5173"
+    networks:
+      - proyex
+    command: ["npm", "run", "dev", "--", "--host"]
+
+networks:
+  proyex:
+    driver: bridge
+
+volumes:
+  proyex-mysql-data:
+    driver: local

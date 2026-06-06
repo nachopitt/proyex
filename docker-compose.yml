@@ -1,0 +1,60 @@
+
+services:
+  # PHP-FPM Application Service
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: prod
+    image: ghcr.io/nachopitt/proyex-app:latest
+    container_name: proyex-app
+    restart: unless-stopped
+    networks:
+      - proyex
+    depends_on:
+      - db
+      - redis
+
+  # Nginx Web Server Service
+  web:
+    build: ./docker/nginx
+    image: ghcr.io/nachopitt/proyex-web:latest
+    container_name: proyex-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - proyex
+    depends_on:
+      - app
+
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    container_name: proyex-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - proyex-mysql-data:/var/lib/mysql
+    networks:
+      - proyex
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: proyex-redis
+    restart: unless-stopped
+    networks:
+      - proyex
+
+networks:
+  proyex:
+    driver: bridge
+
+volumes:
+  proyex-mysql-data:
+    driver: local
