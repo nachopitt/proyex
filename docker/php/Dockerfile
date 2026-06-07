@@ -1,6 +1,34 @@
 # syntax=docker/dockerfile:1
 
 # =============================================================================
+# Stage: base_php
+# Common PHP 8.4-FPM with system dependencies (used by all PHP stages)
+# =============================================================================
+FROM php:8.4-fpm-alpine AS base_php
+WORKDIR /var/www/html
+
+# Install system dependencies shared by all stages
+RUN apk add --no-cache \
+    bash \
+    git \
+    libzip-dev \
+    mysql-dev \
+    libpng-dev \
+    jpeg-dev \
+    freetype-dev \
+    libwebp-dev \
+    zlib-dev \
+    icu-dev \
+    libtool
+
+# Copy the extension installer from a container image to avoid flaky remote URL fetches
+COPY --from=ghcr.io/mlocati/php-extension-installer:latest /usr/bin/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions
+
+# Install all common PHP extensions (used by prod, dev, and php_wayfinder_build)
+RUN install-php-extensions pdo_mysql zip gd intl pcntl exif redis
+
+# =============================================================================
 # Stage 1: composer_install
 # Installs PHP Composer dependencies
 # =============================================================================
@@ -14,40 +42,10 @@ RUN composer install --no-dev --no-autoloader --optimize-autoloader
 # Prepares PHP environment, copies application code, and generates Wayfinder files.
 # This stage ensures PHP is available for artisan commands.
 # =============================================================================
-FROM php:8.4-fpm-alpine AS php_wayfinder_build
-WORKDIR /var/www/html
+FROM base_php AS php_wayfinder_build
 
-# Install system dependencies required for Node.js and PHP extensions
-RUN apk add --no-cache \
-    bash \
-    git \
-    libzip-dev \
-    mysql-dev \
-    libpng-dev \
-    jpeg-dev \
-    freetype-dev \
-    libwebp-dev \
-    zlib-dev \
-    icu-dev \
-    libtool \
-    nodejs \
-    npm
-
-# Install common PHP extensions for Laravel
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j$(nproc) \
-    gd \
-    intl \
-    pcntl \
-    pdo_mysql \
-    zip \
-    exif
-
-# Install Redis
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apk del .build-deps
+# Install Node.js for Wayfinder generation (if needed)
+RUN apk add --no-cache nodejs npm
 
 # Copy application source code
 COPY . .
@@ -86,35 +84,11 @@ RUN npm run build
 # Final Stage: prod (Production image)
 # Combines necessary artifacts for a lean production image.
 # =============================================================================
-FROM php:8.4-fpm-alpine AS prod
-WORKDIR /var/www/html
+FROM base_php AS prod
 
-# Install system dependencies for runtime (minimal)
+# Add runtime-only dependencies (minimal)
 RUN apk add --no-cache \
-    bash \
-    git \
-    libzip-dev \
-    mysql-client \
-    libpng \
-    jpeg \
-    freetype \
-    libwebp \
-    zlib \
-    icu-libs \
-    libtool-libs 
-
-# Install common PHP extensions for Laravel (runtime)
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j$(nproc) \
-    gd \
-    intl \
-    pcntl \
-    pdo_mysql \
-    zip \
-    exif
-
-# Install Redis (runtime)
-RUN pecl install redis && docker-php-ext-enable redis
+    mysql-client
 
 # Copy application source code
 COPY . .
@@ -126,7 +100,6 @@ COPY --from=composer_install /app/vendor /var/www/html/vendor
 COPY --from=node_build /var/www/html/public/build /var/www/html/public/build
 
 # Copy the generated Wayfinder files from the php_wayfinder_build stage
-# Assuming Wayfinder generates into resources/js/wayfinder, actions, routes
 COPY --from=php_wayfinder_build /var/www/html/resources/js/wayfinder /var/www/html/resources/js/wayfinder
 COPY --from=php_wayfinder_build /var/www/html/resources/js/actions /var/www/html/resources/js/actions
 COPY --from=php_wayfinder_build /var/www/html/resources/js/routes /var/www/html/resources/js/routes
@@ -143,16 +116,28 @@ CMD ["php-fpm"]
 
 # =============================================================================
 # Development Stage
+# Adds Xdebug and Node.js to base_php for local development
 # =============================================================================
-# This stage is for the FPM container in the development environment.
-# It adds Xdebug. IT DOES NOT COPY ANY APPLICATION CODE.
-FROM php:8.4-fpm-alpine AS dev
+FROM base_php AS dev
 
-# Install and configure Xdebug
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+# Copy Node.js and npm so the dev image can run Vite
+COPY --from=node:lts-alpine /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:lts-alpine /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+
+# Install Xdebug only in dev (not in prod or php_wayfinder_build)
+RUN install-php-extensions xdebug
+
+# Configure Xdebug
 RUN echo "xdebug.mode=develop,debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
     && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
+# Copy entrypoint script to fix permissions on every container start
+COPY docker/php/entrypoint-dev.sh /entrypoint-dev.sh
+RUN chmod +x /entrypoint-dev.sh
+
+ENTRYPOINT ["/entrypoint-dev.sh"]
+CMD ["php-fpm"]
 
 # =============================================================================
 # Workspace Stage
@@ -160,3 +145,6 @@ RUN echo "xdebug.mode=develop,debug" >> /usr/local/etc/php/conf.d/docker-php-ext
 # This stage is for the workspace/CLI container.
 # It's based on the 'dev' image to ensure it has all the tools.
 FROM dev AS workspace
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

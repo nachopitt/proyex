@@ -6,63 +6,161 @@ The entire development environment is managed by Docker and the Docker Compose C
 
 ### 1. Prerequisites
 
-*   **Docker Desktop:** Make sure you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-*   **`.env` file:** Ensure you have a `.env` file. If not, copy the example file:
-    ```bash
-    cp .env.example .env
-    ```
+*   **Docker** with the Compose CLI plugin installed and running.
+*   **No host MariaDB/MySQL on port 3306 conflict** — the Docker MySQL container runs internally only (no host port exposed). Your host MySQL/MariaDB can stay running.
 
-### 2. Environment Configuration
+### 2. Quick Start (First Time Only)
 
-For the Docker environment to connect to the services, you **must** update the following host entries in your `.env` file.
+> **Note:** First build takes 10-20 minutes (xdebug PECL compilation from source).
 
-Change these two lines:
-```dotenv
-DB_HOST=127.0.0.1
-REDIS_HOST=127.0.0.1
+**Step 1: Create `.env` file from template**
+
+```bash
+cp .env.example .env
 ```
-to this:
+
+**Step 2: Verify these values are in `.env`:**
+
+```dotenv
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=proyex
+DB_USERNAME=proyex
+DB_PASSWORD=proyex
+DB_ROOT_PASSWORD=root_password
+REDIS_HOST=redis
+```
+
+**IMPORTANT:** Use `db` and `redis` (Docker service names), NOT `127.0.0.1` or `localhost`.
+
+**Step 3: Build and start all services**
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+Wait for completion (~10-20 minutes on first run).
+
+**Step 4: Install dependencies**
+
+In a new terminal:
+
+```bash
+docker compose -f docker-compose.dev.yml exec workspace composer install
+docker compose -f docker-compose.dev.yml exec workspace npm install
+docker compose -f docker-compose.dev.yml exec workspace php artisan migrate --seed
+```
+
+**Step 5: Access app**
+
+Open browser: [http://localhost:8080](http://localhost:8080)
+
+---
+
+**Running services (6 containers):**
+- `app` (PHP-FPM)
+- `workspace` (CLI: Composer, Node, npm, artisan)
+- `web` (Nginx)
+- `db` (MySQL 8.0)
+- `redis` (Cache)
+- `vite` (Vite dev server)
+
+### 3. Vite Frontend Dev Server (Optional)
+
+By default, Vite runs inside the `vite` container automatically.
+
+If you want to run it manually in your terminal instead:
+
+```bash
+docker compose -f docker-compose.dev.yml exec workspace npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+**Do not run both simultaneously.** Choose one approach and stick with it.
+
+### 4. Daily Development Workflow
+
+**Every morning:**
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+**Run artisan commands:**
+```bash
+docker compose -f docker-compose.dev.yml exec workspace php artisan <command>
+```
+
+**Run npm commands:**
+```bash
+docker compose -f docker-compose.dev.yml exec workspace npm <command>
+```
+
+**Access app:** [http://localhost:8080](http://localhost:8080)
+
+**When done for the day:**
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+### 4.1 Troubleshooting
+
+**App doesn't load / 404 errors**
+
+Fix:
+```bash
+docker compose -f docker-compose.dev.yml down --rmi all -v
+docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml exec workspace php artisan migrate --seed
+```
+
+**Build fails or containers won't start**
+
+Fix:
+```bash
+docker compose -f docker-compose.dev.yml down --rmi all -v
+docker compose -f docker-compose.dev.yml up -d --build
+```
+
+**Database connection error**
+
+Verify `.env`:
 ```dotenv
 DB_HOST=db
 REDIS_HOST=redis
 ```
 
-### 3. Development Environment Setup
+DO NOT use `127.0.0.1` or `localhost`.
 
-These commands will build the Docker images, install all dependencies, and prepare the database for the **development** environment.
+**Permission denied in storage/**
 
-1.  **Build the Docker Images:**
-    ```bash
-    docker compose build
-    ```
+This is automatically fixed on container start. If it persists:
+```bash
+docker compose -f docker-compose.dev.yml down --rmi all -v
+docker compose -f docker-compose.dev.yml up -d --build
+```
 
-2.  **Start the Development Containers:**
-    ```bash
-    docker compose -f docker-compose.dev.yml up -d
-    ```
+**Port 3306 conflict**
 
-3.  **Install Dependencies:**
-    Run `composer` and `npm` inside the `workspace` container. This will install the dependencies into your local `vendor` and `node_modules` directories, making them available to your IDE.
-    ```bash
-    docker compose -f docker-compose.dev.yml exec workspace composer install
-    docker compose -f docker-compose.dev.yml exec workspace npm install
-    ```
+Our Docker MySQL runs internally only—no port conflict. If you see this error, a local MySQL is likely running on your host. Stop it or the error will resolve when Docker MySQL starts.
 
-4.  **Run Database Migrations:**
-    ```bash
-    docker compose -f docker-compose.dev.yml exec workspace php artisan migrate
-    ```
+### 4.2 Cleanup
 
-### 4. Daily Development Workflow
+**Stop containers (keep data):**
 
-*   **To Start:** `docker compose -f docker-compose.dev.yml up -d`
-*   **To Stop:** `docker compose -f docker-compose.dev.yml down`
-*   **Run Artisan Commands:** Prepend `docker compose -f docker-compose.dev.yml exec workspace` to any `php artisan` command.
-    ```bash
-    # Example
-    docker compose -f docker-compose.dev.yml exec workspace php artisan cache:clear
-    ```
-*   **Access Your App:** [http://localhost:8080](http://localhost:8080)
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+**Stop and remove everything (fresh start):**
+
+```bash
+docker compose -f docker-compose.dev.yml down --rmi all -v
+```
+
+Then restart with:
+
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+```
 
 ### 5. Production Environment
 
