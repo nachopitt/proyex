@@ -1,4 +1,5 @@
 {
+    "name": "proyex",
     "private": true,
     "type": "module",
     "scripts": {
