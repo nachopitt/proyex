@@ -65,17 +65,26 @@ Open browser: [http://localhost:8080](http://localhost:8080)
 - `redis` (Cache)
 - `vite` (Vite dev server)
 
-### 3. Vite Frontend Dev Server (Optional)
+### 3. Vite Frontend Dev Server
 
-By default, Vite runs inside the `vite` container automatically.
+By default, `docker compose -f docker-compose.dev.yml up -d` starts the `vite` container automatically.
 
-If you want to run it manually in your terminal instead:
+In normal conditions, HMR reloads changes when you edit Vue/TypeScript files. If the page shows only a blank/black screen while Laravel still responds, Vite/HMR is up but the browser cannot resolve one or more Vite assets correctly.
 
+If that happens, restart Vite first:
+```bash
+docker compose -f docker-compose.dev.yml restart vite
+```
+
+To view Vite logs:
+```bash
+docker compose -f docker-compose.dev.yml logs -f vite
+```
+
+Manual alternative (use only if you intentionally stop the `vite` service):
 ```bash
 docker compose -f docker-compose.dev.yml exec workspace npm run dev -- --host 0.0.0.0 --port 5173
 ```
-
-**Do not run both simultaneously.** Choose one approach and stick with it.
 
 ### 4. Daily Development Workflow
 
