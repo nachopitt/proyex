@@ -1,38 +1,45 @@
-# Proyex Production Deployment on DigitalOcean
+# Proyex Deployment on DigitalOcean
 
 ## TL;DR (After One-Time Setup)
 
-Once everything is configured, **deployment is this simple:**
+Deployment runs in **two lanes**:
 
 ```bash
+# STAGING — automatic on every push to main
 git push main
-# Wait 3-5 minutes...
-# Your app is live on https://yourdomain.com
+# -> builds images tagged `staging`, deploys to the staging server
+
+# PRODUCTION — deliberate, when staging looks good
+# Publish a GitHub Release (e.g. v1.2.0)
+# -> builds images tagged `release-v1.2.0`, deploys to the production server
 ```
 
-That's it. No SSH, no manual commands on the server. GitHub Actions handles the rest automatically.
+No SSH, no manual commands on the server. GitHub Actions handles the rest.
 
 ## What You Need To Do
 
 One time only:
 
-1. Create a DigitalOcean Ubuntu droplet.
-2. Point your domain DNS A record to droplet IP.
-3. Add GitHub Actions secrets: DEPLOY_KEY, DEPLOY_HOST, DEPLOY_USER.
-4. On the droplet, clone repo into /opt/proyex and create production .env.
-5. Configure SSL (Certbot) and Nginx.
+1. Create DigitalOcean Ubuntu droplet(s) — one for staging, one for production (a single droplet with two directories also works).
+2. Point your domain DNS A record to the production droplet IP.
+3. Add GitHub Actions secrets: `STAGING_DEPLOY_*` and `PROD_DEPLOY_*` (see below).
+4. On each server, create the deploy directory (`/opt/proyex-staging` and `/opt/proyex`) with just an `.env` file. **No repo clone** — CI ships the compose files and the app code lives inside the images.
+5. Configure SSL (Certbot) and Nginx on production.
 
 Every deployment:
 
-1. Commit your code.
-2. Push to main.
-3. Open GitHub Actions and confirm the workflow is green.
+1. Commit and push to `main` → staging updates automatically.
+2. Verify on staging.
+3. Publish a GitHub Release → production updates.
 
 ## Architecture
 
-- **GitHub Actions** (`.github/workflows/build-and-deploy.yml`): On every push to main, builds and pushes both images (proyex-app and proyex-web) to GHCR, then deploys to your DigitalOcean droplet
-- **DigitalOcean Droplet**: Runs containers by pulling pre-built images (no local Docker builds needed)
-- **Result**: Every `git push main` automatically updates your production app in ~3-5 minutes
+Two mirror workflows, one per environment:
+
+- **Staging** (`.github/workflows/build-and-deploy.yml`): on every push to `main`, builds and pushes both images tagged `staging` to GHCR, then copies the compose files to the staging server (`/opt/proyex-staging`) and runs them.
+- **Production** (`.github/workflows/deploy-on-release.yml`): on a published GitHub Release, builds and pushes both images tagged `release-<version>` (and `latest`) to GHCR, then copies the compose files to the production server (`/opt/proyex`) and runs them.
+- **DigitalOcean Droplet(s)**: hold only the compose files (copied by CI) plus a local `.env`; they run containers by pulling pre-built images from GHCR. No source code, no builds, no repo clone on the server.
+- **Result**: `git push main` updates staging; publishing a release updates production — each in ~3-5 minutes.
 
 ## Prerequisites
 
@@ -59,13 +66,18 @@ cat ~/.ssh/proyex_deploy.pub | ssh root@YOUR_DROPLET_IP 'cat >> ~/.ssh/authorize
 
 Go to GitHub repo → Settings → Secrets and Variables → Actions → New repository secret
 
-Add these secrets:
+Add one set per environment (staging and production):
 
 | Secret Name | Value |
 |------------|-------|
-| `DEPLOY_KEY` | Contents of `~/.ssh/proyex_deploy` (private key) |
-| `DEPLOY_HOST` | Your droplet IP or domain |
-| `DEPLOY_USER` | `root` (or your non-root user) |
+| `STAGING_DEPLOY_KEY` | Private key for the staging server |
+| `STAGING_DEPLOY_HOST` | Staging droplet IP or domain |
+| `STAGING_DEPLOY_USER` | `root` (or your non-root user) |
+| `PROD_DEPLOY_KEY` | Private key for the production server |
+| `PROD_DEPLOY_HOST` | Production droplet IP or domain |
+| `PROD_DEPLOY_USER` | `root` (or your non-root user) |
+
+> If you run both environments on a single droplet, the `*_HOST`/`*_USER`/`*_KEY` values can be identical — only the server directory differs (`/opt/proyex-staging` vs `/opt/proyex`).
 
 ### 3. Prepare DigitalOcean Droplet
 
@@ -85,16 +97,16 @@ usermod -aG docker root
 newgrp docker
 ```
 
-Clone repository:
+Create the deploy directory (no repo clone — the server only needs an `.env`;
+CI copies the compose files in on every deploy, and the app code ships inside
+the Docker images):
 ```bash
-cd /opt
-git clone https://github.com/your-username/proyex.git
-cd proyex
+mkdir -p /opt/proyex
+cd /opt/proyex
 ```
 
 Create production `.env`:
 ```bash
-cp .env.example .env
 nano .env
 ```
 
@@ -103,6 +115,10 @@ nano .env
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://yourdomain.com
+
+# Always target the production compose stack on this server.
+# Lets you run plain `docker compose ...` (no -f flags) for everything.
+COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
 
 DB_HOST=db
 DB_PORT=3306
@@ -251,23 +267,30 @@ ufw enable
 
 ## Continuous Deployment
 
-**Every push to `main` branch automatically:**
+**Every push to `main` automatically deploys to STAGING:**
 
-1. GitHub Actions builds Docker image
-2. Pushes to `ghcr.io/your-username/proyex:latest`
-3. SSHs into droplet
-4. Pulls latest images
+1. GitHub Actions builds both Docker images
+2. Pushes them to GHCR tagged `staging`
+3. Copies the compose files to the staging server (`/opt/proyex-staging`)
+4. SSHs in and pulls the images
 5. Runs `docker compose up -d`
 6. Runs migrations
 7. Clears caches
 
-**No manual intervention needed** — just `git push`.
+**Publishing a GitHub Release deploys to PRODUCTION:**
+
+1. GitHub Actions builds both images
+2. Pushes them to GHCR tagged `release-<version>` (and `latest`)
+3. Copies the compose files to the production server (`/opt/proyex`)
+4. SSHs in, pulls the images, runs `docker compose up -d`, migrates, clears caches
+
+So: `git push` → staging; publish a release → production. No manual server steps either way.
 
 ## Manual Deployments
 
-If you need to manually trigger a deployment:
+Both workflows also support `workflow_dispatch`:
 
-1. Go to GitHub repo → Actions → "Build and Deploy to Production"
+1. Go to GitHub repo → Actions → "Build and Deploy to Staging" (or "Build and Deploy to Production")
 2. Click "Run workflow"
 3. Select branch and click "Run workflow"
 
@@ -470,25 +493,21 @@ docker compose logs -f
 
 If your release includes database migrations, add a step to the deploy workflow or run manually after deployment:
 ```bash
-# On droplet
-cd ~/app
+# On the server
+cd /opt/proyex
 docker compose exec -T app php artisan migrate --force
 ```
 
 ## Rollback
 
-If deployment fails, restore the previous version:
+The server runs whatever image tag is pulled — there is no source to revert.
+Roll back by pointing it at a previous immutable image tag (e.g. `release-v1.0.0`):
 ```bash
-# On droplet
-cd ~/app
-docker compose down
-git pull origin <previous-tag-or-branch>
-docker compose up -d
+# On the server
+cd /opt/proyex
+IMAGE_TAG=release-v1.0.0 docker compose pull
+IMAGE_TAG=release-v1.0.0 docker compose up -d
 ```
 
-Or pull a specific image tag:
-```bash
-docker compose down
-# Edit docker-compose.yml to use a specific tag (e.g., release-v1.0.0)
-docker compose up -d
-```
+This is why production images are tagged `release-<version>`: every release stays
+pullable in GHCR, so rolling back is just selecting an older tag.

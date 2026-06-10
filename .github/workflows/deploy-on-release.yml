@@ -1,70 +1,122 @@
-name: Deploy on release
+name: Build and Deploy to Production
+
+# PRODUCTION lane.
+# Publishing a GitHub Release builds versioned images and deploys them to the
+# PRODUCTION server. Deliberate and versioned (easy rollback to any release-*).
+# Staging is handled by the mirror workflow: build-and-deploy.yml.
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
+env:
+  REGISTRY: ghcr.io
+  APP_IMAGE: ghcr.io/nachopitt/proyex-app
+  WEB_IMAGE: ghcr.io/nachopitt/proyex-web
+  # Immutable, versioned tag this lane builds and deploys (e.g. release-v1.2.0).
+  IMAGE_TAG: release-${{ github.event.release.tag_name }}
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v2
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (app)
+        id: meta_app
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.APP_IMAGE }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG }}
+            type=raw,value=latest
+
+      - name: Extract metadata (web)
+        id: meta_web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.WEB_IMAGE }}
+          tags: |
+            type=raw,value=${{ env.IMAGE_TAG }}
+            type=raw,value=latest
+
       - name: Build and push app image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/php/Dockerfile
+          file: ./docker/php/Dockerfile
           target: prod
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/proyex-app:release-${{ github.event.release.tag_name }}
-            ghcr.io/${{ github.repository_owner }}/proyex-app:latest
+          tags: ${{ steps.meta_app.outputs.tags }}
+          labels: ${{ steps.meta_app.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
 
       - name: Build and push web image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
-          context: ./docker/nginx
+          context: .
+          file: ./docker/nginx/Dockerfile
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/proyex-web:release-${{ github.event.release.tag_name }}
-            ghcr.io/${{ github.repository_owner }}/proyex-web:latest
+          tags: ${{ steps.meta_web.outputs.tags }}
+          labels: ${{ steps.meta_web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
-    needs: build-and-push
+    needs: build
     runs-on: ubuntu-latest
-    steps:
-      - name: Wait for registry
-        run: sleep 5
 
-      - name: Deploy to droplet via SSH
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.DROPLET_HOST }}
-          username: ${{ secrets.DROPLET_USER }}
-          port: ${{ secrets.DROPLET_SSH_PORT }}
-          key: ${{ secrets.DROPLET_SSH_KEY }}
-          script: |
-            set -e
-            cd /home/${{ secrets.DROPLET_USER }}/app || exit 0
-            docker compose pull || true
-            docker compose up -d --remove-orphans
-            docker image prune -f || true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production
+        env:
+          DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.PROD_DEPLOY_USER }}
+          DEPLOY_DIR: /opt/proyex
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+
+          # Ship ONLY the compose files (the server never holds the source).
+          # The application code lives inside the images pulled from GHCR.
+          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST "mkdir -p $DEPLOY_DIR"
+          scp -i ~/.ssh/deploy_key \
+            docker-compose.yml docker-compose.prod.yml \
+            $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/
+
+          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST DEPLOY_DIR="$DEPLOY_DIR" IMAGE_TAG="$IMAGE_TAG" 'bash -s' << 'EOF'
+          set -e
+          cd "$DEPLOY_DIR"
+          export COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
+          docker compose pull
+          docker compose up -d
+          docker compose exec -T app php artisan migrate --force
+          docker compose exec -T app php artisan cache:clear
+          docker compose exec -T app php artisan config:cache
+          echo "Production deployment successful!"
+          EOF

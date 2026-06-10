@@ -22,6 +22,9 @@ cp .env.example .env
 **Step 2: Verify these values are in `.env`:**
 
 ```dotenv
+# Selects the dev stack so plain `docker compose ...` targets development.
+COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
+
 DB_HOST=db
 DB_PORT=3306
 DB_DATABASE=proyex
@@ -33,22 +36,33 @@ REDIS_HOST=redis
 
 **IMPORTANT:** Use `db` and `redis` (Docker service names), NOT `127.0.0.1` or `localhost`.
 
+> Because `COMPOSE_FILE` is set in `.env`, you never need `-f` flags — every
+> `docker compose ...` command below automatically uses the dev stack.
+
 **Step 3: Build and start all services**
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose up -d --build
 ```
 
 Wait for completion (~10-20 minutes on first run).
 
-**Step 4: Install dependencies**
+**Step 4: Install dependencies & finish setup**
 
 In a new terminal:
 
 ```bash
-docker compose -f docker-compose.dev.yml exec workspace composer install
-docker compose -f docker-compose.dev.yml exec workspace npm install
-docker compose -f docker-compose.dev.yml exec workspace php artisan migrate --seed
+docker compose exec workspace composer install
+docker compose exec workspace npm install
+docker compose exec workspace php artisan migrate --seed
+```
+
+Then generate an app key **only if `APP_KEY` in `.env` is empty** (a fresh
+clone). If `APP_KEY=base64:...` is already set, skip this — running it would
+rotate the key and invalidate existing encrypted data/sessions:
+
+```bash
+docker compose exec workspace php artisan key:generate
 ```
 
 **Step 5: Access app**
@@ -67,47 +81,47 @@ Open browser: [http://localhost:8080](http://localhost:8080)
 
 ### 3. Vite Frontend Dev Server
 
-By default, `docker compose -f docker-compose.dev.yml up -d` starts the `vite` container automatically.
+By default, `docker compose up -d` starts the `vite` container automatically.
 
 In normal conditions, HMR reloads changes when you edit Vue/TypeScript files. If the page shows only a blank/black screen while Laravel still responds, Vite/HMR is up but the browser cannot resolve one or more Vite assets correctly.
 
 If that happens, restart Vite first:
 ```bash
-docker compose -f docker-compose.dev.yml restart vite
+docker compose restart vite
 ```
 
 To view Vite logs:
 ```bash
-docker compose -f docker-compose.dev.yml logs -f vite
+docker compose logs -f vite
 ```
 
 Manual alternative (use only if you intentionally stop the `vite` service):
 ```bash
-docker compose -f docker-compose.dev.yml exec workspace npm run dev -- --host 0.0.0.0 --port 5173
+docker compose exec workspace npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
 ### 4. Daily Development Workflow
 
 **Every morning:**
 ```bash
-docker compose -f docker-compose.dev.yml up -d
+docker compose up -d
 ```
 
 **Run artisan commands:**
 ```bash
-docker compose -f docker-compose.dev.yml exec workspace php artisan <command>
+docker compose exec workspace php artisan <command>
 ```
 
 **Run npm commands:**
 ```bash
-docker compose -f docker-compose.dev.yml exec workspace npm <command>
+docker compose exec workspace npm <command>
 ```
 
 **Access app:** [http://localhost:8080](http://localhost:8080)
 
 **When done for the day:**
 ```bash
-docker compose -f docker-compose.dev.yml down
+docker compose down
 ```
 
 ### 4.1 Troubleshooting
@@ -116,17 +130,17 @@ docker compose -f docker-compose.dev.yml down
 
 Fix:
 ```bash
-docker compose -f docker-compose.dev.yml down --rmi all -v
-docker compose -f docker-compose.dev.yml up -d --build
-docker compose -f docker-compose.dev.yml exec workspace php artisan migrate --seed
+docker compose down --rmi all -v
+docker compose up -d --build
+docker compose exec workspace php artisan migrate --seed
 ```
 
 **Build fails or containers won't start**
 
 Fix:
 ```bash
-docker compose -f docker-compose.dev.yml down --rmi all -v
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose down --rmi all -v
+docker compose up -d --build
 ```
 
 **Database connection error**
@@ -143,8 +157,8 @@ DO NOT use `127.0.0.1` or `localhost`.
 
 This is automatically fixed on container start. If it persists:
 ```bash
-docker compose -f docker-compose.dev.yml down --rmi all -v
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose down --rmi all -v
+docker compose up -d --build
 ```
 
 **Port 3306 conflict**
@@ -156,58 +170,64 @@ Our Docker MySQL runs internally only—no port conflict. If you see this error,
 **Stop containers (keep data):**
 
 ```bash
-docker compose -f docker-compose.dev.yml down
+docker compose down
 ```
 
 **Stop and remove everything (fresh start):**
 
 ```bash
-docker compose -f docker-compose.dev.yml down --rmi all -v
+docker compose down --rmi all -v
 ```
 
 Then restart with:
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose up -d --build
 ```
 
-### 5. Production Environment
+### 5. Production & Staging Deployment
 
-The `docker-compose.yml` file is configured to build and run your application in a production-ready state. This is for simulating a production deployment locally or for use as a base for a real deployment.
+Deployment is automated through GitHub Actions — you do **not** build or run the
+production stack by hand. See [DEPLOYMENT.md](DEPLOYMENT.md) for full setup.
 
-**Note:** In this environment, the application code is copied into the image, and there is no live-reloading.
+**Two lanes:**
 
-1.  **Configure `.env` for Production:**
-    Ensure your `.env` file is configured for production. Key values include:
-    ```dotenv
-    APP_ENV=production
-    APP_DEBUG=false
-    DB_HOST=db
-    REDIS_HOST=redis
-    ```
+- **Push to `main`** → builds images tagged `staging` and deploys to the staging server.
+- **Publish a GitHub Release** → builds images tagged `release-<version>` and deploys to production.
 
-2.  **Build and Start Containers:**
-    ```bash
-    docker compose up -d --build
-    ```
+The servers hold only the compose files (copied by CI) plus a local `.env`; the
+application code ships inside the Docker images pulled from GHCR. There is no
+repo clone and no local build on the server.
 
-3.  **Run Migrations and Other Commands:**
-    To run `artisan` commands, you must `exec` into the production `app` container. The `workspace` container is not used for the production environment.
-    ```bash
-    # Run database migrations
-    docker compose exec app php artisan migrate --force
+**Simulating the production stack locally (optional):**
 
-    # Example: Clear application cache
-    docker compose exec app php artisan config:cache
-    ```
+The base `docker-compose.yml` is a thin file and cannot run on its own — it must
+be combined with an override. To run the production-style stack locally, point
+`COMPOSE_FILE` at the prod override and supply the prebuilt images:
 
-4.  **Access the Application:**
-    *   **URL:** [http://localhost](http://localhost) (uses the standard port 80).
+```dotenv
+# in .env
+COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
+APP_ENV=production
+APP_DEBUG=false
+DB_HOST=db
+REDIS_HOST=redis
+```
 
-5.  **To Stop the Environment:**
-    ```bash
-    docker compose down
-    ```
+```bash
+docker compose pull          # pull images from GHCR
+docker compose up -d
+docker compose exec -T app php artisan migrate --force
+```
+
+Access at [http://localhost](http://localhost) (port 80). To stop:
+
+```bash
+docker compose down
+```
+
+> Note: the prod stack copies code into the image and has **no** live-reloading.
+> For day-to-day coding, use the dev stack above.
 
 ---
 

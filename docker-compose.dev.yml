@@ -1,6 +1,17 @@
 
+# =============================================================================
+# DEVELOPMENT override — merged on top of docker-compose.yml.
+#
+# Activate it once by setting this in your .env:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
+# Then every `docker compose ...` command uses dev automatically.
+#
+# This file only lists what is DIFFERENT in dev: local builds, live-reload
+# bind mounts, exposed ports, and the dev-only workspace + vite helpers.
+# Everything else (db, redis, network, volume) is inherited from the base.
+# =============================================================================
 services:
-  # PHP-FPM Application Service
+  # Build the dev image locally and mount the source for live changes
   app:
     build:
       context: .
@@ -8,16 +19,27 @@ services:
       target: dev
     image: proyex/app:dev
     container_name: proyex-app-dev
-    restart: unless-stopped
     volumes:
       - .:/var/www/html
-    networks:
-      - proyex
-    depends_on:
-      - db
-      - redis
 
-  # Workspace/CLI Service
+  web:
+    build: ./docker/nginx
+    image: proyex/web:dev
+    container_name: proyex-web-dev
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8080:80"
+
+  db:
+    container_name: proyex-db-dev
+
+  redis:
+    container_name: proyex-redis-dev
+    ports:
+      - "6379:6379"
+
+  # CLI container for artisan / composer / npm (dev only)
   workspace:
     build:
       context: .
@@ -31,47 +53,7 @@ services:
       - proyex
     tty: true
 
-  # Nginx Web Server Service
-  web:
-    build: ./docker/nginx
-    image: proyex/web:dev
-    container_name: proyex-web-dev
-    restart: unless-stopped
-    volumes:
-      - .:/var/www/html
-    ports:
-      - "8080:80"
-    networks:
-      - proyex
-    depends_on:
-      - app
-
-  # MySQL Database Service
-  db:
-    image: mysql:8.0
-    container_name: proyex-db-dev
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    volumes:
-      - proyex-mysql-data:/var/lib/mysql
-    networks:
-      - proyex
-
-  # Redis Service
-  redis:
-    image: redis:alpine
-    container_name: proyex-redis-dev
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - proyex
-
-  # Vite Frontend Development Service
+  # Vite dev server with hot module reload (dev only)
   vite:
     build:
       context: .
@@ -86,11 +68,3 @@ services:
     networks:
       - proyex
     command: ["npm", "run", "dev", "--", "--host"]
-
-networks:
-  proyex:
-    driver: bridge
-
-volumes:
-  proyex-mysql-data:
-    driver: local

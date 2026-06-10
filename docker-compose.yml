@@ -1,12 +1,20 @@
 
+# =============================================================================
+# BASE configuration — shared by every environment.
+#
+# Do NOT run this file on its own. It only describes the *structure* that is
+# common to dev and prod (services, network, volume). Each environment adds
+# its own thin override on top:
+#
+#   dev  ->  docker-compose.yml + docker-compose.dev.yml
+#   prod ->  docker-compose.yml + docker-compose.prod.yml
+#
+# You normally never type the file names: set COMPOSE_FILE in your .env once
+# (see .env.example) and then just run `docker compose up -d`.
+# =============================================================================
 services:
-  # PHP-FPM Application Service
+  # PHP-FPM application (image/build is defined per-environment)
   app:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
-      target: prod
-    image: ghcr.io/nachopitt/proyex-app:latest
     container_name: proyex-app
     restart: unless-stopped
     networks:
@@ -15,20 +23,16 @@ services:
       - db
       - redis
 
-  # Nginx Web Server Service
+  # Nginx web server (image/build is defined per-environment)
   web:
-    build: ./docker/nginx
-    image: ghcr.io/nachopitt/proyex-web:latest
     container_name: proyex-web
     restart: unless-stopped
-    ports:
-      - "80:80"
     networks:
       - proyex
     depends_on:
       - app
 
-  # MySQL Database Service
+  # MySQL database
   db:
     image: mysql:8.0
     container_name: proyex-db
@@ -43,7 +47,7 @@ services:
     networks:
       - proyex
 
-  # Redis Service
+  # Redis cache / queue
   redis:
     image: redis:alpine
     container_name: proyex-redis
