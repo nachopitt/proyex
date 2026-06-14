@@ -1,8 +1,14 @@
 name: Build and Deploy to Staging
 
-# STAGING lane.
-# Every push to main builds fresh images and deploys them to the STAGING server.
-# This is the fast-feedback environment: main is always reflected here.
+# STAGING / main lane.
+# Every push to main BUILDS and pushes the `staging` image to GHCR (no deploy).
+# Deploying the latest main build to the server is MANUAL: trigger this workflow
+# via "Run workflow" (workflow_dispatch) when you want to test main on the
+# droplet. That deploy targets the SAME single droplet as production and
+# temporarily replaces the running prod stack with the `staging` image.
+# To restore production afterwards, re-run the release deploy (deploy-on-release.yml)
+# or, on the server, `IMAGE_TAG=release-<version> docker compose up -d --wait`.
+#
 # Production is handled by the mirror workflow: deploy-on-release.yml.
 
 on:
@@ -86,32 +92,40 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Build runs on every push to main, but DEPLOY only happens when you manually
+    # trigger this workflow (Run workflow). This prevents every push to main from
+    # replacing prod on the single droplet.
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Staging
+      - name: Deploy latest main build to the droplet (manual)
         env:
-          DEPLOY_KEY: ${{ secrets.STAGING_DEPLOY_KEY }}
-          DEPLOY_HOST: ${{ secrets.STAGING_DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.STAGING_DEPLOY_USER }}
-          DEPLOY_DIR: /opt/proyex-staging
+          DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
+          DEPLOY_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.PROD_DEPLOY_USER }}
+          DEPLOY_DIR: /opt/proyex
           IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ] || [ -z "$DEPLOY_KEY" ]; then
+            echo "::error::Missing deploy secrets. Set PROD_DEPLOY_HOST/USER/KEY in repo settings."
+            exit 1
+          fi
           mkdir -p ~/.ssh
           echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
 
           # Ship ONLY the compose files (the server never holds the source).
           # The application code lives inside the images pulled from GHCR.
-          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST "mkdir -p $DEPLOY_DIR"
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p $DEPLOY_DIR"
           scp -i ~/.ssh/deploy_key \
             docker-compose.yml docker-compose.prod.yml \
-            $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/"
 
-          ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST DEPLOY_DIR="$DEPLOY_DIR" IMAGE_TAG="$IMAGE_TAG" 'bash -s' << 'EOF'
+          ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" DEPLOY_DIR="$DEPLOY_DIR" IMAGE_TAG="$IMAGE_TAG" 'bash -s' << 'EOF'
           set -e
           cd "$DEPLOY_DIR"
           export COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
@@ -120,5 +134,5 @@ jobs:
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache
-          echo "Staging deployment successful!"
+          echo "Deployed main (staging image) to the droplet for testing."
           EOF
