@@ -1,234 +1,224 @@
-# Proyex Deployment on DigitalOcean
+# Proyex Deployment
 
-## TL;DR (After One-Time Setup)
+Proyex deploys as two Docker images — `app` (PHP-FPM + application code) and
+`web` (nginx + compiled assets) — built once in CI, published to GHCR, and run
+on a DigitalOcean droplet that holds **only** the compose files and an `.env`.
+There is no source code, no build, and no repo clone on the server.
+
+## TL;DR (after one-time setup)
 
 Deployment runs in **two lanes**:
 
 ```bash
-# STAGING — automatic on every push to main
-git push main
-# -> builds images tagged `staging`, deploys to the staging server
+# STAGING — automatic on every push to main.
+git push origin main
+# -> CI builds `app` + `web` images tagged `staging`, deploys to the staging server.
 
-# PRODUCTION — deliberate, when staging looks good
-# Publish a GitHub Release (e.g. v1.2.0)
-# -> builds images tagged `release-v1.2.0`, deploys to the production server
+# PRODUCTION — deliberate, once staging looks good.
+# Publish a GitHub Release (e.g. v1.2.0) from the commit currently on staging.
+# -> CI PROMOTES the validated `staging` images to `release-v1.2.0` (+ `latest`),
+#    deploys to the production server. No rebuild — the exact tested artifact ships.
 ```
 
-No SSH, no manual commands on the server. GitHub Actions handles the rest.
-
-## What You Need To Do
-
-One time only:
-
-1. Create DigitalOcean Ubuntu droplet(s) — one for staging, one for production (a single droplet with two directories also works).
-2. Point your domain DNS A record to the production droplet IP.
-3. Add GitHub Actions secrets: `STAGING_DEPLOY_*` and `PROD_DEPLOY_*` (see below).
-4. On each server, create the deploy directory (`/opt/proyex-staging` and `/opt/proyex`) with just an `.env` file. **No repo clone** — CI ships the compose files and the app code lives inside the images.
-5. Configure SSL (Certbot) and Nginx on production.
-
-Every deployment:
-
-1. Commit and push to `main` → staging updates automatically.
-2. Verify on staging.
-3. Publish a GitHub Release → production updates.
+No SSH and no manual server commands in the normal flow — GitHub Actions handles it.
 
 ## Architecture
 
-Two mirror workflows, one per environment:
+```mermaid
+flowchart LR
+    push[push to main] --> sbuild[CI: build app+web<br/>tag: staging]
+    sbuild --> spush[(GHCR)]
+    spush --> sdeploy[deploy to<br/>/opt/proyex-staging]
+    rel[publish Release vX] --> promote[CI: retag staging<br/>-> release-vX + latest]
+    promote --> ppush[(GHCR)]
+    ppush --> pdeploy[deploy to<br/>/opt/proyex]
+```
 
-- **Staging** (`.github/workflows/build-and-deploy.yml`): on every push to `main`, builds and pushes both images tagged `staging` to GHCR, then copies the compose files to the staging server (`/opt/proyex-staging`) and runs them.
-- **Production** (`.github/workflows/deploy-on-release.yml`): on a published GitHub Release, builds and pushes both images tagged `release-<version>` (and `latest`) to GHCR, then copies the compose files to the production server (`/opt/proyex`) and runs them.
-- **DigitalOcean Droplet(s)**: hold only the compose files (copied by CI) plus a local `.env`; they run containers by pulling pre-built images from GHCR. No source code, no builds, no repo clone on the server.
-- **Result**: `git push main` updates staging; publishing a release updates production — each in ~3-5 minutes.
+- **Staging lane** ([.github/workflows/build-and-deploy.yml](.github/workflows/build-and-deploy.yml)):
+  every push to `main` builds and pushes both images tagged `staging`, copies the
+  compose files to the staging server (`/opt/proyex-staging`), pulls, and runs them.
+- **Production lane** ([.github/workflows/deploy-on-release.yml](.github/workflows/deploy-on-release.yml)):
+  publishing a Release **re-tags the existing `staging` image by digest** to
+  `release-<version>` and `latest` (via `docker buildx imagetools create` — no
+  rebuild), then deploys to the production server (`/opt/proyex`).
+- **CI gates** on every PR/push: [tests.yml](.github/workflows/tests.yml),
+  [lint.yml](.github/workflows/lint.yml), and [docker-build.yml](.github/workflows/docker-build.yml)
+  (validates both images actually build before anything can be deployed).
+- **Droplet(s)**: hold only the compose files (copied by CI) and a local `.env`.
+  Containers run by pulling pre-built images from GHCR.
+
+> **Build once, promote.** Production never rebuilds from source. The image you
+> verified on staging is the identical image (same digest) that ships to prod.
+> This is why rollback is just selecting an older `release-*` tag.
+
+## Why a single image build, two image targets
+
+Both images are produced from one [docker/php/Dockerfile](docker/php/Dockerfile):
+
+- A single `frontend_build` stage runs `npm run build`. The Laravel Wayfinder
+  Vite plugin shells out to `php artisan`, so this stage has **both** PHP and Node.
+- The `prod` target (app) and the `web` target (nginx) both `COPY --from` that
+  one stage, so the compiled assets in `web` are identical to what `app` ships.
+- The runtime images stay lean: no Node, npm, or Xdebug in `prod`/`web`.
+
+The document root lives at the same absolute path (`/var/www/html/public`) in
+both the `app` and `web` containers, so nginx's `SCRIPT_FILENAME` points at a
+path php-fpm can open. See [docker/nginx/default.conf](docker/nginx/default.conf).
 
 ## Prerequisites
 
-- DigitalOcean account with a droplet (Ubuntu 22.04 LTS, $6/mo minimum)
-- Domain name with DNS pointing to droplet IP
-- GitHub repository with push access
-- SSH key pair for droplet access
+- DigitalOcean droplet(s), Ubuntu 22.04 LTS (one for staging, one for production —
+  see the single-droplet note below).
+- A domain with DNS A record pointing at the production droplet IP.
+- GitHub repository with push access.
+- An SSH key pair per server for CI deploys.
 
-## Initial Setup (One Time)
+> **Single droplet?** The base compose uses fixed container names and the prod
+> overlay publishes port `80`. Running staging **and** production on one droplet
+> would collide on both. Use **separate droplets**, or give the staging stack a
+> distinct compose project name and ports (not covered here). Separate droplets
+> is the supported path.
 
-### 1. Create SSH Key for GitHub Actions
+## One-time setup
 
-Generate SSH key for deployments:
+### 1. Create a deploy SSH key (per server)
+
+On your local machine:
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/proyex_deploy -C "github-actions-deploy"
+ssh-keygen -t ed25519 -f ~/.ssh/proyex_deploy -C "github-actions-deploy" -N ""
+ssh-copy-id -i ~/.ssh/proyex_deploy.pub root@YOUR_DROPLET_IP
 ```
 
-Add public key to droplet's `~/.ssh/authorized_keys`:
-```bash
-cat ~/.ssh/proyex_deploy.pub | ssh root@YOUR_DROPLET_IP 'cat >> ~/.ssh/authorized_keys'
-```
+### 2. Add GitHub Actions secrets
 
-### 2. Add GitHub Secrets
+Repo → Settings → Secrets and variables → Actions. Add one set per environment:
 
-Go to GitHub repo → Settings → Secrets and Variables → Actions → New repository secret
-
-Add one set per environment (staging and production):
-
-| Secret Name | Value |
-|------------|-------|
+| Secret | Value |
+|--------|-------|
 | `STAGING_DEPLOY_KEY` | Private key for the staging server |
-| `STAGING_DEPLOY_HOST` | Staging droplet IP or domain |
-| `STAGING_DEPLOY_USER` | `root` (or your non-root user) |
+| `STAGING_DEPLOY_HOST` | Staging droplet IP or hostname |
+| `STAGING_DEPLOY_USER` | SSH user (e.g. `root`) |
 | `PROD_DEPLOY_KEY` | Private key for the production server |
-| `PROD_DEPLOY_HOST` | Production droplet IP or domain |
-| `PROD_DEPLOY_USER` | `root` (or your non-root user) |
+| `PROD_DEPLOY_HOST` | Production droplet IP or hostname |
+| `PROD_DEPLOY_USER` | SSH user (e.g. `root`) |
 
-> If you run both environments on a single droplet, the `*_HOST`/`*_USER`/`*_KEY` values can be identical — only the server directory differs (`/opt/proyex-staging` vs `/opt/proyex`).
+`GITHUB_TOKEN` (used to push/promote images in GHCR) is provided automatically.
 
-### 3. Prepare DigitalOcean Droplet
+### 3. Prepare the droplet
 
-SSH into droplet:
 ```bash
 ssh root@YOUR_DROPLET_IP
-```
-
-Update system and install Docker:
-```bash
 apt update && apt upgrade -y
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-usermod -aG docker root
-newgrp docker
+curl -fsSL https://get.docker.com | sh
 ```
 
-Create the deploy directory (no repo clone — the server only needs an `.env`;
-CI copies the compose files in on every deploy, and the app code ships inside
-the Docker images):
+Create the deploy directory (no repo clone — CI copies the compose files in on
+every deploy; the app code ships inside the images):
 ```bash
-mkdir -p /opt/proyex
-cd /opt/proyex
+# production: /opt/proyex   |   staging: /opt/proyex-staging
+mkdir -p /opt/proyex && cd /opt/proyex
 ```
 
-Create production `.env`:
-```bash
-nano .env
-```
-
-**Production `.env` settings:**
+Create the `.env` (this file is the only thing you maintain by hand on the server):
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://yourdomain.com
 
-# Always target the production compose stack on this server.
-# Lets you run plain `docker compose ...` (no -f flags) for everything.
+# Always target the production compose stack on this server, so plain
+# `docker compose ...` (no -f flags) works for every command.
 COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
+
+# Pin the deployed image. CI deploys a specific release-<version>; pinning here
+# means a host reboot re-pulls the SAME version, not a moving `latest`.
+IMAGE_TAG=release-v1.0.0
 
 DB_HOST=db
 DB_PORT=3306
 DB_DATABASE=proyex_prod
 DB_USERNAME=proyex_prod
-DB_PASSWORD=StrongPassword123!@#
-DB_ROOT_PASSWORD=StrongRootPassword123!@#
+DB_PASSWORD=CHANGE_ME_strong
+DB_ROOT_PASSWORD=CHANGE_ME_strong_root
 
 REDIS_HOST=redis
-REDIS_PASSWORD=StrongRedisPassword123!@#
+REDIS_PORT=6379
 
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=database
 ```
+```bash
+chmod 600 .env
+```
 
-### 4. Set Up Nginx Reverse Proxy with SSL
+> On the **staging** server use `/opt/proyex-staging`, `IMAGE_TAG=staging`, and a
+> separate database name/credentials.
 
-Install Nginx:
+### 4. TLS termination (production)
+
+The `web` container publishes plain HTTP on port `80`. Terminate TLS with a host
+reverse proxy in front of it — do **not** point nginx at `/opt/proyex/public`
+(there is no source on the server; the assets live inside the `web` container).
+
 ```bash
 apt install nginx certbot python3-certbot-nginx -y
-```
-
-Create Nginx config:
-```bash
 nano /etc/nginx/sites-available/proyex
 ```
-
-Paste:
 ```nginx
-upstream proyex_fpm {
-    server app:9000;
-}
-
 server {
     listen 80;
     server_name yourdomain.com www.yourdomain.com;
-    return 301 https://$server_name$request_uri;
+    return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
     server_name yourdomain.com www.yourdomain.com;
 
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate     /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
-
-    root /opt/proyex/public;
-    index index.php;
 
     client_max_body_size 100M;
 
+    # Proxy to the containerized web (nginx) service published on the host.
     location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass proyex_fpm;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_param HTTPS on;
-        fastcgi_param HTTP_SCHEME https;
-    }
-
-    location ~ /\.ht {
-        deny all;
+        proxy_pass http://127.0.0.1:80;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
-Enable and test:
+> Because the host proxy listens on `443` and the container on `80`, there is no
+> port clash. If you prefer, move TLS into the `web` container instead and skip
+> the host nginx — but use one approach, not both.
+
 ```bash
 ln -s /etc/nginx/sites-available/proyex /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
+nginx -t && systemctl restart nginx
+certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
 
-Get SSL certificate:
-```bash
-certbot certonly --nginx -d yourdomain.com -d www.yourdomain.com
-```
+### 5. First deploy
 
-### 5. Initial Deployment
-
-Pull images and start containers:
+Trigger the staging lane (`git push origin main`) or the production lane (publish
+a Release). To bring a server up manually the first time:
 ```bash
 cd /opt/proyex
 docker compose pull
-docker compose up -d
-docker compose exec app php artisan migrate --force
-docker compose exec app php artisan db:seed  # optional
+docker compose up -d --wait      # waits for db/redis healthchecks
+docker compose exec -T app php artisan migrate --force
+docker compose exec -T app php artisan db:seed --force   # optional, first deploy only
 ```
 
-Verify:
-```bash
-docker compose ps
-```
+### 6. Auto-start on reboot
 
-### 6. Set Up Auto-Start
-
-Create systemd service:
 ```bash
 nano /etc/systemd/system/proyex.service
 ```
-
-Paste:
 ```ini
 [Unit]
 Description=Proyex Docker Compose Application
@@ -239,275 +229,102 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/proyex
-ExecStart=/usr/local/bin/docker compose up -d
-ExecStop=/usr/local/bin/docker compose down
+ExecStart=/usr/bin/docker compose up -d --wait
+ExecStop=/usr/bin/docker compose down
 RemainAfterExit=yes
-Restart=on-failure
-RestartSec=10s
 
 [Install]
 WantedBy=multi-user.target
 ```
-
-Enable:
 ```bash
-systemctl daemon-reload
-systemctl enable proyex
-systemctl start proyex
+systemctl daemon-reload && systemctl enable --now proyex
 ```
 
 ### 7. Firewall
 
 ```bash
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw enable
+ufw allow 22/tcp && ufw allow 80/tcp && ufw allow 443/tcp && ufw enable
 ```
 
-## Continuous Deployment
+## What each deploy does
 
-**Every push to `main` automatically deploys to STAGING:**
+Both lanes SSH to the server and run (the `db`/`redis` healthchecks gate this so
+migrations never race a cold database):
+```bash
+docker compose pull
+docker compose up -d --wait
+docker compose exec -T app php artisan migrate --force
+docker compose exec -T app php artisan cache:clear
+docker compose exec -T app php artisan config:cache
+```
 
-1. GitHub Actions builds both Docker images
-2. Pushes them to GHCR tagged `staging`
-3. Copies the compose files to the staging server (`/opt/proyex-staging`)
-4. SSHs in and pulls the images
-5. Runs `docker compose up -d`
-6. Runs migrations
-7. Clears caches
+Both workflows also support **manual runs** via `workflow_dispatch`
+(Actions → select the workflow → Run workflow).
 
-**Publishing a GitHub Release deploys to PRODUCTION:**
+## Rolling back
 
-1. GitHub Actions builds both images
-2. Pushes them to GHCR tagged `release-<version>` (and `latest`)
-3. Copies the compose files to the production server (`/opt/proyex`)
-4. SSHs in, pulls the images, runs `docker compose up -d`, migrates, clears caches
+Production images are immutable and versioned, so rollback is selecting an older
+tag — never a `git checkout` on the server (there is no source there):
+```bash
+cd /opt/proyex
+# set the desired previous release in .env (so reboots stay on it), then:
+IMAGE_TAG=release-v1.0.0 docker compose pull
+IMAGE_TAG=release-v1.0.0 docker compose up -d --wait
+```
+Update `IMAGE_TAG` in `/opt/proyex/.env` to make the rollback persistent.
 
-So: `git push` → staging; publish a release → production. No manual server steps either way.
+## Database backups
 
-## Manual Deployments
-
-Both workflows also support `workflow_dispatch`:
-
-1. Go to GitHub repo → Actions → "Build and Deploy to Staging" (or "Build and Deploy to Production")
-2. Click "Run workflow"
-3. Select branch and click "Run workflow"
-
-## Database Backups
-
-Create backup script:
 ```bash
 nano /opt/proyex/backup-db.sh
 ```
-
-Paste:
 ```bash
 #!/bin/bash
-BACKUP_DIR="/opt/proyex/backups"
-mkdir -p $BACKUP_DIR
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/proyex_$TIMESTAMP.sql.gz"
-
-docker compose exec -T db mysqldump \
-  -u proyex_prod \
-  -pStrongPassword123!@# \
-  proyex_prod | gzip > $BACKUP_FILE
-
-# Keep 30 days of backups
-find $BACKUP_DIR -type f -mtime +30 -delete
-echo "Backup: $BACKUP_FILE"
+set -euo pipefail
+cd /opt/proyex
+# Credentials are read from .env — not hardcoded in this script.
+set -a; source .env; set +a
+BACKUP_DIR=/opt/proyex/backups
+mkdir -p "$BACKUP_DIR"
+FILE="$BACKUP_DIR/proyex_$(date +%Y%m%d_%H%M%S).sql.gz"
+docker compose exec -T db mysqldump -u root -p"$DB_ROOT_PASSWORD" "$DB_DATABASE" | gzip > "$FILE"
+find "$BACKUP_DIR" -type f -mtime +30 -delete
+echo "Backup: $FILE"
 ```
-
-Add to cron:
 ```bash
 chmod +x /opt/proyex/backup-db.sh
-crontab -e
+( crontab -l 2>/dev/null; echo "0 2 * * * /opt/proyex/backup-db.sh" ) | crontab -
 ```
 
-Add:
-```
-0 2 * * * /opt/proyex/backup-db.sh
-```
+## Monitoring & logs
 
-## Monitoring & Logs
-
-View deployment logs on GitHub:
-```
-GitHub repo → Actions → "Build and Deploy to Production" → latest run
-```
-
-View application logs on droplet:
 ```bash
-docker compose logs -f app
-docker compose logs -f db
-```
-
-Check service status:
-```bash
-systemctl status proyex
 docker compose ps
+docker compose logs -f app
+docker compose logs -f web
+systemctl status proyex
 ```
 
 ## Troubleshooting
 
-**Deployment failed in GitHub Actions:**
-- Check Actions tab for error logs
-- Common issues: wrong secrets, SSH key permissions
+**A deploy failed in GitHub Actions** — open the Actions tab and read the failing
+job. Common causes: wrong/empty deploy secrets, or the `docker build` gate
+failing (fix the Dockerfile; it will block the deploy by design).
 
-**Containers won't start on droplet:**
+**Containers won't start / unhealthy**
 ```bash
 docker compose ps
 docker compose logs app
-ssh -i ~/.ssh/deploy_key root@YOUR_DROPLET_IP
+docker compose logs db
 ```
 
-**Test database connection:**
+**White screen / assets 404** — confirm the `web` image is the matching version
+(same tag as `app`) and that `SCRIPT_FILENAME` in
+[docker/nginx/default.conf](docker/nginx/default.conf) points at
+`/var/www/html/public`.
+
+**Database connection** 
 ```bash
 docker compose exec app php artisan tinker
->>> DB::connection()->getPdo()
+>>> DB::connection()->getPdo();
 ```
-
-**Manual restart:**
-```bash
-docker compose restart
-# or full redeploy
-docker compose down && docker compose up -d
-```
-
-## Rolling Back
-
-If deployment breaks, SSH to droplet and checkout previous code:
-```bash
-cd /opt/proyex
-git log --oneline | head -10
-git checkout <previous-commit-hash>
-docker compose pull
-docker compose up -d
-```
-
-Or wait for next deployment push from GitHub.
-DB_ROOT_PASSWORD=your_secure_root_password
-EOF
-chmod 600 ~/app/.env
-```
-
-Test that images can be pulled (they will fail to run until pushed from GitHub):
-```bash
-docker compose pull || echo "Images not yet in GHCR — this is normal before first release"
-```
-
-### 2. Generate SSH Deploy Key
-
-On your **local machine**:
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/proyex_deploy -C "GitHub Actions Deploy" -N ""
-```
-
-Add the public key to your droplet's authorized_keys:
-```bash
-ssh-copy-id -i ~/.ssh/proyex_deploy.pub your_user@your.droplet.ip
-```
-
-Verify:
-```bash
-ssh -i ~/.ssh/proyex_deploy your_user@your.droplet.ip "echo 'SSH key works'"
-```
-
-### 3. Add GitHub Secrets
-
-In your GitHub repo, go to **Settings > Secrets and variables > Actions > New repository secret** and add:
-
-| Secret | Value | Example |
-|--------|-------|---------|
-| DROPLET_HOST | Droplet IP address | `192.0.2.1` |
-| DROPLET_USER | SSH username on droplet | `root` or `deploy` |
-| DROPLET_SSH_KEY | Contents of `~/.ssh/proyex_deploy` (private key) | `-----BEGIN PRIVATE KEY-----...` |
-| DROPLET_SSH_PORT | (optional, defaults to 22) | `22` |
-
-**Important:** The private key file is sensitive — keep it safe and never commit it.
-
-### 4. Test Deployment
-
-1. Create a GitHub Release:
-   - Go to your repo
-   - Click **Releases** → **Draft a new release**
-   - Tag: `v1.0.0`
-   - Title: `Release 1.0.0`
-   - Click **Publish release**
-
-2. Watch the workflow:
-   - Go to **Actions** tab
-   - Click the "Deploy on release" workflow run
-   - Check **build-and-push** and **deploy** job logs
-
-3. On success, SSH into droplet and verify:
-   ```bash
-   docker compose ps
-   docker image ls | grep ghcr
-   ```
-
-## How It Works
-
-1. **Trigger:** You publish a GitHub release (v1.0.0, etc.)
-2. **Build:** GitHub Actions builds `app` and `web` images with Dockerfile targets
-3. **Push:** Images are tagged and pushed to GHCR (ghcr.io/nachopitt/proyex-app:latest, etc.)
-4. **Deploy:** GitHub Actions SSHs the droplet and runs:
-   - `docker compose pull` — fetches latest images from GHCR
-   - `docker compose up -d --remove-orphans` — starts/restarts containers
-   - `docker image prune -f` — cleans up old images
-
-## Troubleshooting
-
-**"SSH key permission denied"**
-- Verify key was added: `ssh-keygen -l -f ~/.ssh/proyex_deploy.pub`
-- Check droplet's `~/.ssh/authorized_keys` contains the public key
-- Verify SSH port is correct (default 22)
-
-**"Docker compose pull failed"**
-- Ensure images were pushed to GHCR (check Actions → build-and-push logs)
-- Verify GHCR images are public (or add auth to droplet)
-- SSH into droplet and test: `docker pull ghcr.io/nachopitt/proyex-app:latest`
-
-**"Permission denied while trying to connect"**
-- Verify DROPLET_SSH_KEY secret is the **private** key, not public
-- Check DROPLET_USER and DROPLET_HOST are correct
-- Test manually: `ssh -i ~/.ssh/proyex_deploy user@host`
-
-## Manual Deployment (if needed)
-
-SSH into droplet:
-```bash
-cd ~/app
-# Pull latest images
-docker compose pull
-
-# Restart containers
-docker compose up -d --remove-orphans
-
-# View logs
-docker compose logs -f
-```
-
-## Database Migrations
-
-If your release includes database migrations, add a step to the deploy workflow or run manually after deployment:
-```bash
-# On the server
-cd /opt/proyex
-docker compose exec -T app php artisan migrate --force
-```
-
-## Rollback
-
-The server runs whatever image tag is pulled — there is no source to revert.
-Roll back by pointing it at a previous immutable image tag (e.g. `release-v1.0.0`):
-```bash
-# On the server
-cd /opt/proyex
-IMAGE_TAG=release-v1.0.0 docker compose pull
-IMAGE_TAG=release-v1.0.0 docker compose up -d
-```
-
-This is why production images are tagged `release-<version>`: every release stays
-pullable in GHCR, so rolling back is just selecting an older tag.

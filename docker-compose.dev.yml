@@ -23,7 +23,10 @@ services:
       - .:/var/www/html
 
   web:
-    build: ./docker/nginx
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      target: web
     image: proyex/web:dev
     container_name: proyex-web-dev
     volumes:
