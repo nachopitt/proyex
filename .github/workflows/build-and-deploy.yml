@@ -75,7 +75,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/nginx/Dockerfile
+          file: ./docker/php/Dockerfile
+          target: web
           push: true
           tags: ${{ steps.meta_web.outputs.tags }}
           labels: ${{ steps.meta_web.outputs.labels }}
@@ -115,7 +116,7 @@ jobs:
           cd "$DEPLOY_DIR"
           export COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
           docker compose pull
-          docker compose up -d
+          docker compose up -d --wait
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan cache:clear
           docker compose exec -T app php artisan config:cache

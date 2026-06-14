@@ -20,8 +20,10 @@ services:
     networks:
       - proyex
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   # Nginx web server (image/build is defined per-environment)
   web:
@@ -46,6 +48,12 @@ services:
       - proyex-mysql-data:/var/lib/mysql
     networks:
       - proyex
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   # Redis cache / queue
   redis:
@@ -54,6 +62,12 @@ services:
     restart: unless-stopped
     networks:
       - proyex
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
 networks:
   proyex:

@@ -35,50 +35,35 @@ RUN install-php-extensions pdo_mysql zip gd intl pcntl exif redis
 FROM composer:latest AS composer_install
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-autoloader --optimize-autoloader
+# Generate the autoloader here so `php artisan` can boot in frontend_build.
+# (The prod stage re-dumps an optimized autoloader once the full source is present.)
+RUN composer install --no-dev --no-scripts --optimize-autoloader
 
 # =============================================================================
-# Stage 2: php_wayfinder_build
-# Prepares PHP environment, copies application code, and generates Wayfinder files.
-# This stage ensures PHP is available for artisan commands.
+# Stage 2: frontend_build
+# Builds the frontend with Vite. The Wayfinder Vite plugin shells out to
+# `php artisan`, so this stage needs BOTH PHP (from base_php) and Node. It is a
+# fat, throwaway build stage — none of its toolchain reaches the final image.
 # =============================================================================
-FROM base_php AS php_wayfinder_build
+FROM base_php AS frontend_build
 
-# Install Node.js for Wayfinder generation (if needed)
+# Install Node.js so Vite can run alongside PHP
 RUN apk add --no-cache nodejs npm
 
 # Copy application source code
 COPY . .
 
-# Copy Composer dependencies from the first stage
+# Copy Composer dependencies from the first stage (vendor/autoload is needed by
+# artisan, which the Wayfinder plugin invokes during the Vite build)
 COPY --from=composer_install /app/vendor /var/www/html/vendor
 
-# Ensure .env is present for Artisan commands (even a minimal one)
-# We'll copy .env.example and generate a key.
+# Ensure .env is present so artisan can boot during the build
 COPY .env.example .env
 RUN php artisan key:generate
 
-# Clear caches and run Wayfinder generation
-RUN php artisan optimize:clear
-
-# =============================================================================
-# Stage 3: node_build
-# Builds frontend assets with Vite.
-# =============================================================================
-FROM node:lts-alpine AS node_build
-WORKDIR /var/www/html
-
-# Copy application source code (including the Wayfinder generated files from the previous stage)
-COPY . .
-
-# Copy Composer dependencies (if npm scripts need access to vendor/autoload.php for some reason)
-COPY --from=composer_install /app/vendor /var/www/html/vendor
-
-# Install Node.js dependencies
-RUN npm ci
-
-# Run Vite build
-RUN npm run build
+# Install Node dependencies and build assets. The Wayfinder plugin runs
+# `php artisan wayfinder:generate` here, where php is available.
+RUN npm ci && npm run build
 
 # =============================================================================
 # Final Stage: prod (Production image)
@@ -96,16 +81,16 @@ COPY . .
 # Copy Composer dependencies from the composer_install stage
 COPY --from=composer_install /app/vendor /var/www/html/vendor
 
-# Copy built frontend assets from the node_build stage
-COPY --from=node_build /var/www/html/public/build /var/www/html/public/build
+# Copy built frontend assets from the frontend_build stage. Only the compiled
+# output is needed at runtime — no Node, npm, or TS source ships in prod.
+COPY --from=frontend_build /var/www/html/public/build /var/www/html/public/build
 
-# Copy the generated Wayfinder files from the php_wayfinder_build stage
-COPY --from=php_wayfinder_build /var/www/html/resources/js/wayfinder /var/www/html/resources/js/wayfinder
-COPY --from=php_wayfinder_build /var/www/html/resources/js/actions /var/www/html/resources/js/actions
-COPY --from=php_wayfinder_build /var/www/html/resources/js/routes /var/www/html/resources/js/routes
-
-# Generate the autoloader and optimize
-RUN composer dump-autoload --optimize --no-dev
+# Generate the optimized autoloader with the full application source present so
+# the classmap covers app/, database/, etc. Composer is copied in just for this
+# build step; it is not part of the runtime.
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN composer dump-autoload --optimize --no-dev \
+    && rm -f /usr/bin/composer
 
 # Set permissions for storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
@@ -125,7 +110,7 @@ COPY --from=node:lts-alpine /usr/local/bin/node /usr/local/bin/node
 COPY --from=node:lts-alpine /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 
-# Install Xdebug only in dev (not in prod or php_wayfinder_build)
+# Install Xdebug only in dev (not in prod or frontend_build)
 RUN install-php-extensions xdebug
 
 # Configure Xdebug
@@ -148,3 +133,23 @@ FROM dev AS workspace
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# =============================================================================
+# Web Stage (nginx)
+# =============================================================================
+# Serves static assets and proxies PHP requests to the php-fpm `app` container.
+# It reuses the single `frontend_build` stage (build-once) so the compiled
+# assets here are byte-identical to what the app image ships. The document root
+# lives at the SAME absolute path as the app container (/var/www/html/public)
+# so nginx's SCRIPT_FILENAME points at a path php-fpm can open.
+FROM nginx:alpine AS web
+
+# Web server config
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Compiled front-end assets, served directly by nginx. index.php is included so
+# the front controller path exists in this image (used as the fastcgi target).
+COPY --from=frontend_build /var/www/html/public /var/www/html/public
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
