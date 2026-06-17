@@ -205,6 +205,13 @@ The droplet holds only the compose files (copied by CI) plus a local `.env`; the
 application code ships inside the Docker images pulled from GHCR. There is no
 repo clone and no local build on the server.
 
+> The server `.env` is a **separate, hand-written production file** — never a copy
+> of your dev `.env`. It needs `APP_ENV=production`, `APP_DEBUG=false`,
+> `DB_CONNECTION=mysql`, strong unique DB passwords, the prod `COMPOSE_FILE`, and
+> its **own** `APP_KEY` (generate once with `php artisan key:generate --show`;
+> never reuse the dev key), plus `chmod 600`. Lock SSH to key-only access too.
+> See [DEPLOYMENT.md](DEPLOYMENT.md) for the full template and server hardening.
+
 **Test the latest `main` build locally (recommended before shipping):**
 
 Pull and run the exact `staging` image CI built — the same artifact a Release

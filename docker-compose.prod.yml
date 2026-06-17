@@ -8,6 +8,11 @@
 #
 # This file only lists what is DIFFERENT in prod: pull the prebuilt images
 # from GHCR (no local build) and publish the web port.
+#
+# The web container is published on 127.0.0.1:8080 (loopback only), NOT 0.0.0.0:80.
+# A host reverse proxy (nginx + certbot, see DEPLOYMENT.md) terminates TLS on
+# 443/80 and proxies to 127.0.0.1:8080. Binding the container to 80 directly
+# would collide with that host nginx ("address already in use").
 # =============================================================================
 services:
   app:
@@ -16,4 +21,4 @@ services:
   web:
     image: ghcr.io/nachopitt/proyex-web:${IMAGE_TAG:-latest}
     ports:
-      - "80:80"
+      - "127.0.0.1:8080:80"
