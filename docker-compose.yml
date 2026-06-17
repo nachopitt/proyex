@@ -17,6 +17,8 @@ services:
   app:
     container_name: proyex-app
     restart: unless-stopped
+    env_file:
+      - .env
     networks:
       - proyex
     depends_on:
