@@ -185,19 +185,45 @@ Then restart with:
 docker compose up -d --build
 ```
 
-### 5. Production & Staging Deployment
+### 5. Production Deployment
 
 Deployment is automated through GitHub Actions — you do **not** build or run the
 production stack by hand. See [DEPLOYMENT.md](DEPLOYMENT.md) for full setup.
 
-**Two lanes:**
+Single droplet, single production stack:
 
-- **Push to `main`** → builds images tagged `staging` and deploys to the staging server.
-- **Publish a GitHub Release** → builds images tagged `release-<version>` and deploys to production.
+- **Push to `main`** → CI builds images tagged `staging` and pushes them to GHCR.
+  **It does not deploy.**
+- **Test `main` on the droplet** (optional) → GitHub → Actions → "Build and
+  Deploy to Staging" → **Run workflow**. This deploys the latest `staging` image
+  to the droplet, temporarily replacing prod (there is only one stack).
+- **Publish a GitHub Release** → promotes the validated `staging` image (re-tagged
+  by digest to `release-<version>` + `latest`, no rebuild) and deploys to the
+  droplet.
 
-The servers hold only the compose files (copied by CI) plus a local `.env`; the
+The droplet holds only the compose files (copied by CI) plus a local `.env`; the
 application code ships inside the Docker images pulled from GHCR. There is no
 repo clone and no local build on the server.
+
+> The server `.env` is a **separate, hand-written production file** — never a copy
+> of your dev `.env`. It needs `APP_ENV=production`, `APP_DEBUG=false`,
+> `DB_CONNECTION=mysql`, strong unique DB passwords, the prod `COMPOSE_FILE`, and
+> its **own** `APP_KEY` (generate once with `php artisan key:generate --show`;
+> never reuse the dev key), plus `chmod 600`. Lock SSH to key-only access too.
+> See [DEPLOYMENT.md](DEPLOYMENT.md) for the full template and server hardening.
+
+**Test the latest `main` build locally (recommended before shipping):**
+
+Pull and run the exact `staging` image CI built — the same artifact a Release
+would promote:
+
+```bash
+COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml IMAGE_TAG=staging \
+  docker compose pull
+COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml IMAGE_TAG=staging \
+  docker compose up -d --wait
+docker compose exec -T app php artisan migrate --force
+```
 
 **Simulating the production stack locally (optional):**
 
@@ -216,7 +242,7 @@ REDIS_HOST=redis
 
 ```bash
 docker compose pull          # pull images from GHCR
-docker compose up -d
+docker compose up -d --wait  # wait for db/redis healthchecks
 docker compose exec -T app php artisan migrate --force
 ```
 

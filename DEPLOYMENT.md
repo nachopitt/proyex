@@ -2,54 +2,63 @@
 
 Proyex deploys as two Docker images — `app` (PHP-FPM + application code) and
 `web` (nginx + compiled assets) — built once in CI, published to GHCR, and run
-on a DigitalOcean droplet that holds **only** the compose files and an `.env`.
-There is no source code, no build, and no repo clone on the server.
+on a **single** DigitalOcean droplet that holds **only** the compose files and an
+`.env`. There is no source code, no build, and no repo clone on the server.
 
 ## TL;DR (after one-time setup)
 
-Deployment runs in **two lanes**:
-
 ```bash
-# STAGING — automatic on every push to main.
+# BUILD — automatic on every push to main.
 git push origin main
-# -> CI builds `app` + `web` images tagged `staging`, deploys to the staging server.
+# -> CI builds `app` + `web` images tagged `staging` and pushes them to GHCR.
+#    It does NOT deploy. main is validated as an image, not auto-shipped.
 
-# PRODUCTION — deliberate, once staging looks good.
-# Publish a GitHub Release (e.g. v1.2.0) from the commit currently on staging.
-# -> CI PROMOTES the validated `staging` images to `release-v1.2.0` (+ `latest`),
-#    deploys to the production server. No rebuild — the exact tested artifact ships.
+# TEST main ON THE SERVER — manual, on demand.
+# GitHub -> Actions -> "Build and Deploy to Staging" -> Run workflow.
+# -> Deploys the latest `staging` image to the droplet so you can test it.
+#    NOTE: there is one droplet, so this temporarily replaces the running prod
+#    stack. Restore prod by re-deploying the release (see Rollback).
+
+# PRODUCTION — deliberate, when main looks good.
+# Publish a GitHub Release (e.g. v1.2.0).
+# -> CI PROMOTES the `staging` image to `release-v1.2.0` (+ `latest`) and deploys
+#    to the droplet. No rebuild — the exact tested artifact ships.
 ```
-
-No SSH and no manual server commands in the normal flow — GitHub Actions handles it.
 
 ## Architecture
 
+One droplet, one running stack. Pushing to `main` only builds images; deploying
+is always a deliberate action (a manual run to test, or a Release to ship).
+
 ```mermaid
 flowchart LR
-    push[push to main] --> sbuild[CI: build app+web<br/>tag: staging]
-    sbuild --> spush[(GHCR)]
-    spush --> sdeploy[deploy to<br/>/opt/proyex-staging]
-    rel[publish Release vX] --> promote[CI: retag staging<br/>-> release-vX + latest]
-    promote --> ppush[(GHCR)]
-    ppush --> pdeploy[deploy to<br/>/opt/proyex]
+    push[push to main] --> sbuild[CI: build app+web<br/>tag: staging] --> ghcr[(GHCR)]
+    ghcr -.manual Run workflow.-> test[deploy staging image<br/>to droplet for testing]
+    rel[publish Release vX] --> promote[CI: retag staging<br/>-> release-vX + latest] --> ghcr2[(GHCR)]
+    ghcr2 --> pdeploy[deploy to droplet<br/>/opt/proyex]
 ```
 
-- **Staging lane** ([.github/workflows/build-and-deploy.yml](.github/workflows/build-and-deploy.yml)):
-  every push to `main` builds and pushes both images tagged `staging`, copies the
-  compose files to the staging server (`/opt/proyex-staging`), pulls, and runs them.
+- **Build / main lane** ([.github/workflows/build-and-deploy.yml](.github/workflows/build-and-deploy.yml)):
+  every push to `main` builds and pushes both images tagged `staging`. The deploy
+  job runs **only on manual `workflow_dispatch`** and targets the single droplet
+  (`/opt/proyex`), temporarily replacing prod with the `staging` image for testing.
 - **Production lane** ([.github/workflows/deploy-on-release.yml](.github/workflows/deploy-on-release.yml)):
   publishing a Release **re-tags the existing `staging` image by digest** to
   `release-<version>` and `latest` (via `docker buildx imagetools create` — no
-  rebuild), then deploys to the production server (`/opt/proyex`).
+  rebuild), then deploys to the droplet (`/opt/proyex`).
 - **CI gates** on every PR/push: [tests.yml](.github/workflows/tests.yml),
   [lint.yml](.github/workflows/lint.yml), and [docker-build.yml](.github/workflows/docker-build.yml)
   (validates both images actually build before anything can be deployed).
-- **Droplet(s)**: hold only the compose files (copied by CI) and a local `.env`.
+- **Droplet**: holds only the compose files (copied by CI) and a local `.env`.
   Containers run by pulling pre-built images from GHCR.
 
-> **Build once, promote.** Production never rebuilds from source. The image you
-> verified on staging is the identical image (same digest) that ships to prod.
-> This is why rollback is just selecting an older `release-*` tag.
+> **Build once, promote.** Production never rebuilds from source. The `staging`
+> image you tested is the identical image (same digest) that ships to prod when
+> promoted. This is why rollback is just selecting an older `release-*` tag.
+
+> **One droplet, one stack.** Testing `main` on the server replaces the running
+> production stack for the duration of the test, because there is only one stack.
+> Test locally first when you can (see README), and keep server testing brief.
 
 ## Why a single image build, two image targets
 
@@ -67,21 +76,21 @@ path php-fpm can open. See [docker/nginx/default.conf](docker/nginx/default.conf
 
 ## Prerequisites
 
-- DigitalOcean droplet(s), Ubuntu 22.04 LTS (one for staging, one for production —
-  see the single-droplet note below).
-- A domain with DNS A record pointing at the production droplet IP.
+- A single DigitalOcean droplet, Ubuntu 24.04 LTS.
+- A domain with a DNS A record pointing at the droplet IP (required for HTTPS;
+  for a quick test you can launch on the raw IP over plain HTTP instead).
 - GitHub repository with push access.
-- An SSH key pair per server for CI deploys.
+- An SSH key pair for CI deploys.
 
-> **Single droplet?** The base compose uses fixed container names and the prod
-> overlay publishes port `80`. Running staging **and** production on one droplet
-> would collide on both. Use **separate droplets**, or give the staging stack a
-> distinct compose project name and ports (not covered here). Separate droplets
-> is the supported path.
+> **One droplet, one stack.** This setup runs a single production stack on one
+> droplet. Pushing to `main` does not deploy; you deploy either by manually
+> running the build workflow (to test `main` on the droplet, which temporarily
+> replaces prod) or by publishing a Release (to ship). Both deploys target the
+> same `/opt/proyex` stack and use the same `PROD_DEPLOY_*` secrets.
 
 ## One-time setup
 
-### 1. Create a deploy SSH key (per server)
+### 1. Create a deploy SSH key
 
 On your local machine:
 ```bash
@@ -91,15 +100,14 @@ ssh-copy-id -i ~/.ssh/proyex_deploy.pub root@YOUR_DROPLET_IP
 
 ### 2. Add GitHub Actions secrets
 
-Repo → Settings → Secrets and variables → Actions. Add one set per environment:
+Repo → Settings → Secrets and variables → Actions. With a single droplet you only
+need the `PROD_DEPLOY_*` set — both the manual `main` deploy and the release
+deploy use it:
 
 | Secret | Value |
 |--------|-------|
-| `STAGING_DEPLOY_KEY` | Private key for the staging server |
-| `STAGING_DEPLOY_HOST` | Staging droplet IP or hostname |
-| `STAGING_DEPLOY_USER` | SSH user (e.g. `root`) |
-| `PROD_DEPLOY_KEY` | Private key for the production server |
-| `PROD_DEPLOY_HOST` | Production droplet IP or hostname |
+| `PROD_DEPLOY_KEY` | Private SSH key for the droplet |
+| `PROD_DEPLOY_HOST` | Droplet IP or hostname |
 | `PROD_DEPLOY_USER` | SSH user (e.g. `root`) |
 
 `GITHUB_TOKEN` (used to push/promote images in GHCR) is provided automatically.
@@ -115,14 +123,25 @@ curl -fsSL https://get.docker.com | sh
 Create the deploy directory (no repo clone — CI copies the compose files in on
 every deploy; the app code ships inside the images):
 ```bash
-# production: /opt/proyex   |   staging: /opt/proyex-staging
 mkdir -p /opt/proyex && cd /opt/proyex
 ```
 
-Create the `.env` (this file is the only thing you maintain by hand on the server):
+Create the `.env` (this file is the only thing you maintain by hand on the server).
+
+> **Never copy your local dev `.env` to the server.** The dev file carries
+> `APP_ENV=local`, `APP_DEBUG=true`, a dev `APP_KEY`, the dev `COMPOSE_FILE`, and
+> weak/local DB credentials — all wrong or unsafe in production (`APP_DEBUG=true`
+> alone leaks stack traces and env vars to visitors). Write a dedicated prod
+> `.env` instead. You may start from [.env.example](.env.example), but it
+> defaults to `DB_CONNECTION=sqlite`, so be sure to switch it to `mysql`.
+
 ```dotenv
+APP_NAME=Proyex
 APP_ENV=production
+# Generate ONCE, locally (see "Generate APP_KEY" below). Never reuse the dev key.
+APP_KEY=
 APP_DEBUG=false
+# Real domain once you have one; the droplet IP (http only) is fine for testing.
 APP_URL=https://yourdomain.com
 
 # Always target the production compose stack on this server, so plain
@@ -133,6 +152,9 @@ COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
 # means a host reboot re-pulls the SAME version, not a moving `latest`.
 IMAGE_TAG=release-v1.0.0
 
+# Use the MySQL container — NOT sqlite. DB_HOST/REDIS_HOST are the compose
+# service names (resolved on the internal Docker network), not 127.0.0.1.
+DB_CONNECTION=mysql
 DB_HOST=db
 DB_PORT=3306
 DB_DATABASE=proyex_prod
@@ -140,19 +162,64 @@ DB_USERNAME=proyex_prod
 DB_PASSWORD=CHANGE_ME_strong
 DB_ROOT_PASSWORD=CHANGE_ME_strong_root
 
+REDIS_CLIENT=phpredis
 REDIS_HOST=redis
+REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 SESSION_DRIVER=database
 CACHE_STORE=database
 QUEUE_CONNECTION=database
 ```
+
+Lock the file down — it holds secrets and is read by the deploy user that runs
+`docker compose`:
 ```bash
-chmod 600 .env
+chmod 600 .env                       # -rw------- : owner read/write only
+chown "$USER:$USER" .env             # owned by the deploy user (e.g. proyexdeploy)
 ```
 
-> On the **staging** server use `/opt/proyex-staging`, `IMAGE_TAG=staging`, and a
-> separate database name/credentials.
+> `docker compose` reads `.env` **as the user invoking it**, then injects the
+> values into the containers — so `600` does not block MySQL/Redis/PHP from
+> getting their variables. Avoid `644`/group/other read bits; they would expose
+> your DB credentials to any other account on the box.
+
+> The pinned `IMAGE_TAG` keeps prod on a fixed release across reboots. A manual
+> `main` test deploy passes `IMAGE_TAG=staging` at deploy time (overriding this
+> value for that run); restoring prod re-applies the pinned release tag.
+
+#### Generate `APP_KEY`
+
+Generate the key **locally** and paste the result into the server `.env`. Doing
+it locally avoids a chicken-and-egg problem (the container may not boot without a
+key). `--show` only prints the key; it does **not** modify your local `.env`:
+```bash
+# On your LOCAL machine, in the project folder:
+php artisan key:generate --show      # prints: base64:...
+```
+No PHP locally? Produce an identical-format key with OpenSSL:
+```bash
+echo "base64:$(openssl rand -base64 32)"
+```
+Paste the `base64:...` value into `/opt/proyex/.env` as `APP_KEY=...`.
+
+> **Generate it ONCE and keep it stable.** `APP_KEY` encrypts sessions, cookies,
+> and `Crypt::` data. Changing it later logs everyone out and makes existing
+> encrypted data unreadable. Each environment gets its own key — never reuse the
+> dev key.
+
+#### `APP_URL`: domain vs. raw IP
+
+- **With a domain** (real production): `APP_URL=https://yourdomain.com`. Point a
+  DNS A record at the droplet IP and terminate TLS (next step).
+- **No domain yet** (testing only): `APP_URL=http://YOUR_DROPLET_IP`. A bare IP
+  cannot get a trusted HTTPS certificate (Let's Encrypt issues for domains, not
+  IPs), so this is plain HTTP — fine to verify the deploy, not for real traffic.
+- Serve the app at the **root** of the host. Do **not** append a subdirectory
+  like `/Proyex` to `APP_URL`; nginx serves from `/` and the Inertia/Vite assets
+  use root-relative paths, so a prefix would break every asset and route.
+- `APP_URL` is read at runtime. If config is cached, after changing it run
+  `docker compose exec app php artisan config:clear`.
 
 ### 4. TLS termination (production)
 
@@ -183,7 +250,7 @@ server {
 
     # Proxy to the containerized web (nginx) service published on the host.
     location / {
-        proxy_pass http://127.0.0.1:80;
+        proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
@@ -192,9 +259,11 @@ server {
 }
 ```
 
-> Because the host proxy listens on `443` and the container on `80`, there is no
-> port clash. If you prefer, move TLS into the `web` container instead and skip
-> the host nginx — but use one approach, not both.
+> The `web` container publishes on `127.0.0.1:8080` (loopback only, set in
+> [docker-compose.prod.yml](docker-compose.prod.yml)) so it does **not** collide
+> with this host nginx on port 80. The host proxy listens on `80`/`443` and
+> forwards to `127.0.0.1:8080`. Use one TLS approach — this host proxy, **or**
+> TLS inside the `web` container — not both.
 
 ```bash
 ln -s /etc/nginx/sites-available/proyex /etc/nginx/sites-enabled/
@@ -245,6 +314,56 @@ systemctl daemon-reload && systemctl enable --now proyex
 ```bash
 ufw allow 22/tcp && ufw allow 80/tcp && ufw allow 443/tcp && ufw enable
 ```
+
+### 8. Harden SSH (key-only access)
+
+The droplet is public, so disable password login and rely only on keys. **Keep
+your current SSH session open** while you do this and test from a second terminal,
+so a mistake can't lock you out.
+
+First confirm your key actually works (no password prompt):
+```bash
+# from your LOCAL machine, in a second terminal:
+ssh -o PreferredAuthentications=publickey -o PasswordAuthentication=no DEPLOY_USER@YOUR_DROPLET_IP
+```
+
+> **`sshd` uses first-match-wins, not last.** `man sshd_config`: “for each
+> keyword, the **first obtained value will be used**.” The drop-in files in
+> `/etc/ssh/sshd_config.d/` are read in filename order, so a low-numbered file
+> setting `PasswordAuthentication yes` (Ubuntu ships `50-cloud-init.conf` doing
+> exactly that) **wins over** any higher-numbered file setting `no`. Adding
+> another `no` later does nothing — you must make your `no` appear **first**.
+
+Drop in a hardening file that sorts **before** `50-cloud-init.conf`:
+```bash
+sudo tee /etc/ssh/sshd_config.d/00-hardening.conf >/dev/null <<'EOF'
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+PubkeyAuthentication yes
+EOF
+
+sudo sshd -t && sudo systemctl restart ssh
+```
+
+Verify the **effective** value (this replays the first-match logic — trust it
+over reading the files by eye):
+```bash
+sudo sshd -T | grep -i passwordauthentication   # must print: passwordauthentication no
+```
+Then confirm passwords are rejected (keep your other session open):
+```bash
+ssh -o PreferredAuthentications=password DEPLOY_USER@YOUR_DROPLET_IP   # -> Permission denied (publickey)
+```
+
+> Stop cloud-init from re-enabling passwords on reboot:
+> ```bash
+> grep -q '^ssh_pwauth:' /etc/cloud/cloud.cfg \
+>   && sudo sed -i 's/^\(\s*ssh_pwauth:\).*/\1 false/' /etc/cloud/cloud.cfg \
+>   || echo 'ssh_pwauth: false' | sudo tee -a /etc/cloud/cloud.cfg
+> ```
+> Optional extra hardening: `sudo passwd -l DEPLOY_USER` (lock the password) and
+> install `fail2ban` to ban brute-force attempts on port 22.
 
 ## What each deploy does
 
@@ -317,6 +436,22 @@ docker compose ps
 docker compose logs app
 docker compose logs db
 ```
+
+**MySQL `db` is unhealthy / `--wait` times out on first deploy** — almost always
+a bad or missing `.env`. MySQL 8 refuses to initialize with a blank root
+password, so if `DB_ROOT_PASSWORD`/`DB_PASSWORD` were empty (e.g. `.env` was
+missing when the stack first came up), the container goes unhealthy. The failed
+run also leaves a **half-initialized data volume** that must be wiped before a
+retry — MySQL only reads the `MYSQL_*` env vars when it initializes an *empty*
+data directory, so fixing `.env` alone is not enough:
+```bash
+cd /opt/proyex
+docker compose down -v        # removes the bad proyex-mysql-data volume
+# fix /opt/proyex/.env (real DB_DATABASE/DB_USERNAME/DB_PASSWORD/DB_ROOT_PASSWORD)
+docker compose up -d --wait
+```
+> `down -v` deletes the database volume. Only do this on a fresh/first deploy
+> with no real data, or restore from a backup afterward (see Database backups).
 
 **White screen / assets 404** — confirm the `web` image is the matching version
 (same tag as `app`) and that `SCRIPT_FILENAME` in
