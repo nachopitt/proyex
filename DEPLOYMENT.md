@@ -126,6 +126,52 @@ every deploy; the app code ships inside the images):
 mkdir -p /opt/proyex && cd /opt/proyex
 ```
 
+#### If deploying with a non-root SSH user (recommended)
+
+GitHub Actions can deploy as a non-root user (for example `proyexdeploy`), but
+you must grant that user access to `/opt/proyex` and Docker first:
+
+```bash
+# run as root once
+useradd -m -s /bin/bash proyexdeploy || true
+mkdir -p /opt/proyex
+chown -R proyexdeploy:proyexdeploy /opt/proyex
+usermod -aG docker proyexdeploy
+```
+
+Then re-login as that user so the new group membership is active:
+```bash
+su - proyexdeploy
+docker ps
+```
+
+> If this bootstrap is skipped, deploys often fail with permission errors when
+> creating `/opt/proyex` or when running `docker compose` over SSH.
+
+#### GHCR authentication (private packages only)
+
+The images are currently public on GHCR, so `docker compose pull` works without
+any login. If you ever make the GitHub repo (and therefore its packages) private,
+the server won't be able to pull images until you authenticate:
+
+1. Create a GitHub **Personal Access Token** (PAT) with `read:packages` scope:
+   GitHub → Settings → Developer settings → Personal access tokens → Fine-grained
+   or Classic → select `read:packages`.
+
+2. Log in on the droplet (do this once; Docker caches the credentials in
+   `~/.docker/config.json`):
+   ```bash
+   echo "YOUR_PAT" | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+   ```
+
+3. Restrict the credential file so only the deploy user can read it:
+   ```bash
+   chmod 600 ~/.docker/config.json
+   ```
+
+> The PAT only needs `read:packages` — it cannot push or modify anything.
+> Rotate it from GitHub if the droplet is ever compromised.
+
 Create the `.env` (this file is the only thing you maintain by hand on the server).
 
 > **Never copy your local dev `.env` to the server.** The dev file carries
@@ -271,6 +317,38 @@ nginx -t && systemctl restart nginx
 certbot --nginx -d yourdomain.com -d www.yourdomain.com
 ```
 
+#### No domain yet (IP-only temporary mode)
+
+If you are launching on a raw IP first (no HTTPS yet), configure nginx to catch
+all HTTP traffic and proxy to the containerized app. This avoids the default
+"Welcome to nginx" page and serves your app at `http://YOUR_DROPLET_IP`:
+
+```bash
+sudo tee /etc/nginx/sites-available/proyex >/dev/null <<'EOF'
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  server_name _;
+
+  location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+EOF
+
+sudo ln -sfn /etc/nginx/sites-available/proyex /etc/nginx/sites-enabled/proyex
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+> Browsers may auto-upgrade to HTTPS and show `ERR_CONNECTION_REFUSED` on a raw
+> IP because nothing listens on `443` yet. Test explicitly with
+> `http://YOUR_DROPLET_IP` until a domain + TLS are configured.
+
 ### 5. First deploy
 
 Trigger the staging lane (`git push origin main`) or the production lane (publish
@@ -314,6 +392,10 @@ systemctl daemon-reload && systemctl enable --now proyex
 ```bash
 ufw allow 22/tcp && ufw allow 80/tcp && ufw allow 443/tcp && ufw enable
 ```
+
+If you use DigitalOcean Cloud Firewalls, allow the same inbound ports there
+too. UFW and cloud firewalls are independent layers; either one can block
+traffic even when the other is open.
 
 ### 8. Harden SSH (key-only access)
 
