@@ -1,15 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # =============================================================================
-# Build arguments for version injection
-# =============================================================================
-ARG APP_VERSION=unknown
-
-# =============================================================================
 # Stage: base_php
 # Common PHP 8.4-FPM with system dependencies (used by all PHP stages)
 # =============================================================================
 FROM php:8.4-fpm-alpine AS base_php
+ARG APP_VERSION=unknown
 ENV APP_VERSION=${APP_VERSION}
 WORKDIR /var/www/html
 

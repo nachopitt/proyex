@@ -13,6 +13,7 @@ onMounted(async () => {
     } catch (error) {
         console.error('Failed to fetch version:', error);
         version.value = 'unknown';
+        environment.value = 'production';
     }
 });
 </script>
