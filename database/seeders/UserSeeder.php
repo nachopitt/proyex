@@ -16,19 +16,32 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()
-            ->has(UserProfile::factory()->count(1)->state([
-                'first_name' => 'Ignacio',
-                'last_name' => 'Zamora',
+        $adminName = env('INITIAL_ADMIN_NAME', 'admin');
+        $adminEmail = env('INITIAL_ADMIN_EMAIL', 'admin@example.com');
+        $adminPassword = env('INITIAL_ADMIN_PASSWORD', 'change-this-password');
+        $firstName = env('INITIAL_ADMIN_FIRST_NAME', 'Admin');
+        $lastName = env('INITIAL_ADMIN_LAST_NAME', 'User');
+
+        $user = User::firstOrCreate(
+            ['email' => $adminEmail],
+            [
+                'name' => $adminName,
+                'password' => Hash::make($adminPassword),
+            ]
+        );
+
+        UserProfile::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
                 'active' => 1,
-            ]))
-            ->has(UserRole::factory()->count(1)->state([
-                'role' => Role::ADMIN->value,
-            ]))
-            ->create([
-                'name' => 'nachopitt',
-                'email' => 'nachopitt@gmail.com',
-                'password' => Hash::make('coronado'),
-            ]);
+            ]
+        );
+
+        UserRole::updateOrCreate(
+            ['user_id' => $user->id],
+            ['role' => Role::ADMIN->value]
+        );
     }
 }

@@ -32,9 +32,17 @@ DB_USERNAME=proyex
 DB_PASSWORD=proyex
 DB_ROOT_PASSWORD=root_password
 REDIS_HOST=redis
+
+# Private access bootstrap admin account
+INITIAL_ADMIN_NAME=admin
+INITIAL_ADMIN_EMAIL=admin@example.com
+INITIAL_ADMIN_PASSWORD=change-this-password
+INITIAL_ADMIN_FIRST_NAME=Admin
+INITIAL_ADMIN_LAST_NAME=User
 ```
 
 **IMPORTANT:** Use `db` and `redis` (Docker service names), NOT `127.0.0.1` or `localhost`.
+Set a strong value for `INITIAL_ADMIN_PASSWORD` before first seed.
 
 > Because `COMPOSE_FILE` is set in `.env`, you never need `-f` flags — every
 > `docker compose ...` command below automatically uses the dev stack.
@@ -56,6 +64,8 @@ docker compose exec workspace composer install
 docker compose exec workspace npm install
 docker compose exec workspace php artisan migrate --seed
 ```
+
+Public self-registration is disabled in this project. The seeded initial admin account is the intended login path.
 
 Then generate an app key **only if `APP_KEY` in `.env` is empty** (a fresh
 clone). If `APP_KEY=base64:...` is already set, skip this — running it would
