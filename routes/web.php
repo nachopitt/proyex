@@ -6,6 +6,14 @@ use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Health & version endpoint (no auth, useful for deployment checks)
+Route::get('/api/version', function () {
+    return response()->json([
+        'version' => config('app.version'),
+        'environment' => config('app.env'),
+    ]);
+});
+
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');

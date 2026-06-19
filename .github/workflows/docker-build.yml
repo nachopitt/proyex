@@ -23,6 +23,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Read version from .version file
+        id: version
+        run: echo "app_version=$(cat .version)" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -36,6 +40,8 @@ jobs:
           load: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.app_version }}
 
       - name: Build web image (web target, no push)
         uses: docker/build-push-action@v5
@@ -47,3 +53,5 @@ jobs:
           load: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.app_version }}

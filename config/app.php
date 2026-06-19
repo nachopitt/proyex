@@ -56,6 +56,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | In dev, reads from .version file. In prod, uses APP_VERSION env var
+    | (baked in at Docker build time). Fallback to 'unknown' if neither exists.
+    |
+    */
+
+    'version' => env('APP_VERSION') ?: (function() {
+        $versionFile = base_path('.version');
+        return file_exists($versionFile) ? trim(file_get_contents($versionFile)) : 'unknown';
+    })(),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
