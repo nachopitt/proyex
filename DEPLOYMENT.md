@@ -25,6 +25,28 @@ git push origin main
 #    to the droplet. No rebuild — the exact tested artifact ships.
 ```
 
+## Application versioning
+
+The app-visible version is shared across dev and prod from one canonical file:
+[.version](.version).
+
+- `.version` is committed to git and is the team source of truth.
+- Local development reads `.version` unless `APP_VERSION` is explicitly set.
+- CI reads `.version` and passes it into Docker builds as `APP_VERSION`.
+- The built production image exposes that value at runtime.
+
+Inside the app, version resolution order is:
+
+1. `APP_VERSION`
+2. `.version`
+3. `unknown`
+
+Operational rule:
+
+- bump `.version` when preparing a new visible release version
+- do not rely on `.env` for shared versioning
+- keep `APP_VERSION` as a build/runtime injection mechanism
+
 ## Architecture
 
 One droplet, one running stack. Pushing to `main` only builds images; deploying

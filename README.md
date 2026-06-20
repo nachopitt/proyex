@@ -195,6 +195,26 @@ Then restart with:
 docker compose up -d --build
 ```
 
+### Application Versioning
+
+The app-visible release version has one canonical source of truth:
+[.version](.version).
+
+- `.version` is committed to git and should be bumped when you want the
+    displayed release version to change.
+- Local development reads `.version` by default.
+- CI reads `.version` and injects the same value into Docker builds as
+    `APP_VERSION`.
+- Production reads `APP_VERSION` from the built image.
+- A local `.env` may override `APP_VERSION`, but that is optional and should
+    not be treated as the team source of truth.
+
+Resolution order inside the app is:
+
+1. `APP_VERSION`
+2. `.version`
+3. `unknown`
+
 ### 5. Production Deployment
 
 Deployment is automated through GitHub Actions — you do **not** build or run the
