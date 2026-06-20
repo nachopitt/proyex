@@ -5,7 +5,7 @@
 # Common PHP 8.4-FPM with system dependencies (used by all PHP stages)
 # =============================================================================
 FROM php:8.4-fpm-alpine AS base_php
-ARG APP_VERSION=unknown
+ARG APP_VERSION=
 ENV APP_VERSION=${APP_VERSION}
 WORKDIR /var/www/html
 
