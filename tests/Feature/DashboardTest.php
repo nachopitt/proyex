@@ -23,5 +23,14 @@ class DashboardTest extends TestCase
 
         $response = $this->get(route('dashboard'));
         $response->assertStatus(200);
+        
+        $response->assertInertia(fn ($page) => $page
+            ->component('Dashboard')
+            ->has('stats')
+            ->has('recent_updates')
+            ->has('upcoming_projects')
+            ->has('priority_breakdown')
+            ->has('status_breakdown')
+        );
     }
 }

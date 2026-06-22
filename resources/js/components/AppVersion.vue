@@ -22,7 +22,10 @@ onMounted(async () => {
     <div v-if="version" class="px-2 py-2 text-xs text-neutral-500 dark:text-neutral-400">
         <div class="flex items-center justify-between gap-2">
             <span class="truncate">{{ version }}</span>
-            <span v-if="environment !== 'production'" class="inline-flex items-center rounded-full bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+            <span
+                v-if="environment !== 'production'"
+                class="inline-flex items-center rounded-full bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+            >
                 {{ environment }}
             </span>
         </div>

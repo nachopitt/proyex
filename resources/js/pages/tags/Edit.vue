@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import InputError from '@/components/InputError.vue'
-import { index, edit, update } from '@/routes/tags';
-import { BreadcrumbItem, Tag } from '@/types'
-import { dashboard } from '@/routes'
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
+import { edit, index, update } from '@/routes/tags';
+import { BreadcrumbItem, Tag } from '@/types';
+import { useForm } from '@inertiajs/vue3';
 
 interface Props {
     tag: Tag;
@@ -33,10 +33,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     name: props.tag.name,
-})
+});
 
 function submit() {
-    form.put(update(props.tag.id).url)
+    form.put(update(props.tag.id).url);
 }
 </script>
 
@@ -51,14 +51,7 @@ function submit() {
                     <form @submit.prevent="submit" class="space-y-6">
                         <div>
                             <Label for="name">Name</Label>
-                            <Input
-                                id="name"
-                                type="text"
-                                class="mt-1 block w-full"
-                                v-model="form.name"
-                                required
-                                autofocus
-                            />
+                            <Input id="name" type="text" class="mt-1 block w-full" v-model="form.name" required autofocus />
                             <InputError class="mt-2" :message="form.errors.name" />
                         </div>
                         <div class="flex items-center gap-4">
