@@ -18,19 +18,20 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $today = Carbon::today()->toDateString();
+        $inactiveStatuses = [Status::COMPLETED->value, Status::CANCELLED->value];
 
         // 1. Projects statistics (Top-level projects only, i.e., parent_id IS NULL)
         $totalProjectsCount = Project::whereNull('parent_id')->count();
         
         $activeProjectsCount = Project::whereNull('parent_id')
-            ->where('current_status', '!=', Status::COMPLETED)
+            ->whereNotIn('current_status', $inactiveStatuses)
             ->count();
 
         $completedProjectsCount = Project::whereNull('parent_id')
             ->where('current_status', Status::COMPLETED)
             ->count();
 
-        $overdueProjectsCount = Project::where('current_status', '!=', Status::COMPLETED)
+        $overdueProjectsCount = Project::whereNotIn('current_status', $inactiveStatuses)
             ->whereNotNull('due_date')
             ->where('due_date', '<', $today)
             ->count();
@@ -60,7 +61,8 @@ class DashboardController extends Controller
             });
 
         // 3. Upcoming project deadlines (Next 5 upcoming deadlines)
-        $upcomingProjects = Project::where('current_status', '!=', Status::COMPLETED)
+        $upcomingProjects = Project::whereNotIn('current_status', $inactiveStatuses)
+            ->whereNull('parent_id')
             ->whereNotNull('due_date')
             ->where('due_date', '>=', $today)
             ->orderBy('due_date', 'asc')
