@@ -1,28 +1,19 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import InputError from '@/components/InputError.vue'
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { index, show, edit, update } from '@/routes/projects';
-import { BreadcrumbItem, Priority, Project, User, Tag, Status } from '@/types'
-import { dashboard } from '@/routes'
-import DeleteProject from '@/components/DeleteProject.vue'
-import Multiselect from 'vue-multiselect'
+import DeleteProject from '@/components/DeleteProject.vue';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
+import { edit, index, show, update } from '@/routes/projects';
+import { BreadcrumbItem, Priority, Project, Status, Tag, User } from '@/types';
+import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-
+import Multiselect from 'vue-multiselect';
 
 interface Props {
     project: Project;
@@ -45,7 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: props.project.title.slice(0, 20) + "...",
+        title: props.project.title.slice(0, 20) + '...',
         href: show(props.project.id).url,
     },
     {
@@ -65,22 +56,22 @@ const form = useForm({
     due_date: props.project.due_date,
     tags: props.project.tags, // Initialize with Tag objects
     parent_id: props.project.parent_id?.toString() ?? '',
-})
+});
 
 // Create a local ref for tags
 const availableTags = ref(props.tags);
 
 function submit() {
-    form.transform(data => ({
+    form.transform((data) => ({
         ...data,
-        tags: data.tags.map(tag => tag.name),
-    })).put(update(props.project.id).url)
+        tags: data.tags.map((tag) => tag.name),
+    })).put(update(props.project.id).url);
 }
 
 // Custom tag handler
 const addTag = (newTagName: string) => {
     // Check if tag already exists to prevent duplicates
-    if (!availableTags.value.some(tag => tag.name === newTagName)) {
+    if (!availableTags.value.some((tag) => tag.name === newTagName)) {
         const newTag: Tag = { id: Date.now() * -1, name: newTagName }; // Temporary negative ID
         availableTags.value.push(newTag);
         form.tags.push(newTag);
@@ -99,24 +90,13 @@ const addTag = (newTagName: string) => {
                     <form @submit.prevent="submit" class="space-y-6">
                         <div>
                             <Label for="title">Title</Label>
-                            <Input
-                                id="title"
-                                type="text"
-                                class="mt-1 block w-full"
-                                v-model="form.title"
-                                required
-                                autofocus
-                            />
+                            <Input id="title" type="text" class="mt-1 block w-full" v-model="form.title" required autofocus />
                             <InputError class="mt-2" :message="form.errors.title" />
                         </div>
 
                         <div>
                             <Label for="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                class="mt-1 block w-full"
-                                v-model="form.description"
-                            />
+                            <Textarea id="description" class="mt-1 block w-full" v-model="form.description" />
                             <InputError class="mt-2" :message="form.errors.description" />
                         </div>
 
@@ -129,11 +109,7 @@ const addTag = (newTagName: string) => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Priorities</SelectLabel>
-                                        <SelectItem
-                                            v-for="priority in priorities"
-                                            :key="priority.id"
-                                            :value="String(priority.id)"
-                                        >
+                                        <SelectItem v-for="priority in priorities" :key="priority.id" :value="String(priority.id)">
                                             {{ priority.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -151,11 +127,7 @@ const addTag = (newTagName: string) => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Users</SelectLabel>
-                                        <SelectItem
-                                            v-for="user in props.users"
-                                            :key="user.id"
-                                            :value="String(user.id)"
-                                        >
+                                        <SelectItem v-for="user in props.users" :key="user.id" :value="String(user.id)">
                                             {{ user.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -173,11 +145,7 @@ const addTag = (newTagName: string) => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Projects</SelectLabel>
-                                        <SelectItem
-                                            v-for="project in props.projects"
-                                            :key="project.id"
-                                            :value="String(project.id)"
-                                        >
+                                        <SelectItem v-for="project in props.projects" :key="project.id" :value="String(project.id)">
                                             {{ project.title }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -208,23 +176,13 @@ const addTag = (newTagName: string) => {
 
                         <div>
                             <Label for="start_date">Start Date</Label>
-                            <Input
-                                id="start_date"
-                                type="date"
-                                class="mt-1 block w-full"
-                                v-model="form.start_date"
-                            />
+                            <Input id="start_date" type="date" class="mt-1 block w-full" v-model="form.start_date" />
                             <InputError class="mt-2" :message="form.errors.start_date" />
                         </div>
 
                         <div>
                             <Label for="due_date">Due Date</Label>
-                            <Input
-                                id="due_date"
-                                type="date"
-                                class="mt-1 block w-full"
-                                v-model="form.due_date"
-                            />
+                            <Input id="due_date" type="date" class="mt-1 block w-full" v-model="form.due_date" />
                             <InputError class="mt-2" :message="form.errors.due_date" />
                         </div>
 

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import Heading from '@/components/Heading.vue'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import InputError from '@/components/InputError.vue'
-import { Textarea } from '@/components/ui/textarea'
+import DeleteProjectUpdate from '@/components/DeleteProjectUpdate.vue';
+import Heading from '@/components/Heading.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { dashboard } from '@/routes';
 import { index, show } from '@/routes/projects';
 import { edit as editUpdate, update as updateUpdate } from '@/routes/updates';
-import { BreadcrumbItem, ProjectUpdate, Status } from '@/types'
-import { dashboard } from '@/routes'
-import DeleteProjectUpdate from '@/components/DeleteProjectUpdate.vue'
+import { BreadcrumbItem, ProjectUpdate, Status } from '@/types';
+import { useForm } from '@inertiajs/vue3';
 
 interface Props {
     projectUpdate: ProjectUpdate;
@@ -29,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: index().url,
     },
     {
-        title: props.projectUpdate.project.title.slice(0, 20) + "...",
+        title: props.projectUpdate.project.title.slice(0, 20) + '...',
         href: show(props.projectUpdate.project.id).url,
     },
     {
@@ -40,10 +40,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     description: props.projectUpdate.description,
-})
+});
 
 function submit() {
-    form.put(updateUpdate(props.projectUpdate.id).url)
+    form.put(updateUpdate(props.projectUpdate.id).url);
 }
 </script>
 
@@ -58,11 +58,7 @@ function submit() {
                     <form @submit.prevent="submit" class="space-y-6">
                         <div>
                             <Label for="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                class="mt-1 block w-full"
-                                v-model="form.description"
-                            />
+                            <Textarea id="description" class="mt-1 block w-full" v-model="form.description" />
                             <InputError class="mt-2" :message="form.errors.description" />
                         </div>
 
@@ -71,7 +67,7 @@ function submit() {
                         </div>
                     </form>
                 </div>
-                <DeleteProjectUpdate :project-update="projectUpdate"/>
+                <DeleteProjectUpdate :project-update="projectUpdate" />
             </div>
         </div>
     </AppLayout>

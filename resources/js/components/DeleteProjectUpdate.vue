@@ -44,7 +44,7 @@ const props = defineProps<Props>();
                             preserveScroll: true,
                         }"
                         class="space-y-6"
-                        v-slot="{ processing, reset, }"
+                        v-slot="{ processing, reset }"
                     >
                         <DialogHeader class="space-y-3">
                             <DialogTitle>Are you sure you want to delete the project update?</DialogTitle>
