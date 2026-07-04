@@ -1,7 +1,7 @@
-# Project-Specific Copilot Rules for Proyex
+# Project-Specific Agent Rules for Proyex
 
 > [!IMPORTANT]
-> **Synchronization Notice**: When updating or modifying these rules, please make sure to keep them synchronized with the Antigravity agent rules at `.agents/AGENTS.md`.
+> **Synchronization Notice**: When updating or modifying these rules, please make sure to keep them synchronized with the GitHub Copilot instructions at `.github/copilot-instructions.md`.
 
 This project runs inside a Docker-composed environment. All developers and Large Language Models (LLMs) **must never** execute commands like PHP, Composer, Artisan, npm, or PHPUnit directly on the host machine. Instead, always target the development docker containers (specifically `workspace`).
 

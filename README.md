@@ -127,6 +127,9 @@ docker compose exec workspace php artisan <command>
 docker compose exec workspace npm <command>
 ```
 
+> [!NOTE]
+> **For automated runners / CI scripts**: If executing these commands from a non-interactive shell (like GitHub Actions, cron, or AI agents), you must pass the `-T` flag to disable TTY allocation (e.g., `docker compose exec -T workspace php artisan test`).
+
 **Access app:** [http://localhost:8080](http://localhost:8080)
 
 **When done for the day:**
