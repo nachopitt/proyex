@@ -29,3 +29,13 @@ This project runs inside a Docker-composed environment. All developers and Large
      - *Incorrect*: `docker compose exec workspace npm run lint`
      - *Correct*: `docker compose exec -T workspace npm run lint`
      - *Correct*: `docker compose exec -T workspace php artisan test`
+
+## File Storage Rules
+- Never write file drafts like issues, templates, or markdown draft files to the `.gemini` or `<appDataDir>` directories.
+- Always save file drafts inside the workspace in the project root directory or at `.github/issues/` in case of issues.
+
+## Link Generation Rules
+- Always create clickable links for all files, folder paths, and code symbols (classes, types, methods, functions, structures) referenced in your responses.
+- Use workspace-relative paths for all markdown links (e.g., `[filename](relative/path/to/file.php)` or `[ClassName](relative/path/to/file.php#L10)`).
+- Do not use absolute paths or the `file:///` scheme, as they fail to resolve on cross-platform host machines (e.g., Windows hosts accessing WSL/Docker workspaces).
+- Do not wrap the link text in backticks, as this breaks link formatting.
