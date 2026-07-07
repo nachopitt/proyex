@@ -1,0 +1,5 @@
+# Ignore all certificates in this directory
+*
+# Except this .gitignore file and the placeholder
+!.gitignore
+!ca-certificate.crt
