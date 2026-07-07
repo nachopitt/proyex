@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     bash \
     git \
     libzip-dev \
+    mysql-client \
     mysql-dev \
     libpng-dev \
     jpeg-dev \
@@ -73,10 +74,6 @@ RUN npm ci && npm run build
 # =============================================================================
 FROM base_php AS prod
 
-# Add runtime-only dependencies (minimal)
-RUN apk add --no-cache \
-    mysql-client
-
 # Copy application source code
 COPY . .
 
@@ -127,6 +124,21 @@ ENTRYPOINT ["/entrypoint-dev.sh"]
 CMD ["php-fpm"]
 
 # =============================================================================
+# Stage: schemalex_builder
+# Build the schemalex binary from source using Go
+# =============================================================================
+FROM golang:alpine AS schemalex_builder
+RUN go install github.com/schemalex/schemalex/cmd/schemalex@latest
+
+# =============================================================================
+# Stage: atlas_builder
+# Download Atlas CLI using the official installation script
+# =============================================================================
+FROM alpine:latest AS atlas_builder
+RUN apk add --no-cache curl
+RUN curl -sSf https://atlasgo.sh | sh
+
+# =============================================================================
 # Workspace Stage
 # =============================================================================
 # This stage is for the workspace/CLI container.
@@ -135,6 +147,12 @@ FROM dev AS workspace
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Install schemalex
+COPY --from=schemalex_builder /go/bin/schemalex /usr/local/bin/schemalex
+
+# Install Atlas CLI
+COPY --from=atlas_builder /usr/local/bin/atlas /usr/local/bin/atlas
 
 # =============================================================================
 # Web Stage (nginx)
