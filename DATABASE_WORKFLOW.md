@@ -10,6 +10,10 @@ This document records the design decisions, resolved issues, and the final autom
 * **Problem**: Running `php artisan db:export` inside the container threw TLS/SSL handshake errors because the MariaDB CLI client defaults to demanding encrypted connections to MySQL 8.
 * **Resolution**: Officially updated the `nachopitt/db-commands` package to accept and support the `--skip-ssl` flag natively so that no manual file modifications are required.
 
+### B. Collation Mismatches (Resolved in `docker-compose.yml`)
+* **Problem**: MySQL 8 default schema/database collation is `utf8mb4_0900_ai_ci`, but Laravel migrations create tables with `utf8mb4_unicode_ci`. This collation mismatch causes Atlas to attempt a schema-level `ALTER SCHEMA` command, which fails because Atlas restricts schema-level mutations when scoped to a single database schema.
+* **Resolution**: Configured the MySQL container command in [docker-compose.yml](docker-compose.yml) to default globally to `--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci`. This guarantees both the live database and any created dev sandboxes inherit the correct collation from the start.
+
 ---
 
 ## 2. The Final Architecture: Atlas CLI
