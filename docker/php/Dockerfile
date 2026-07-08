@@ -137,6 +137,8 @@ CMD ["php-fpm"]
 # Build the schemalex binary from source using Go
 # =============================================================================
 FROM golang:alpine AS schemalex_builder
+COPY docker/certs* /usr/local/share/ca-certificates/
+RUN if [ -f /usr/local/share/ca-certificates/ca-certificate.crt ]; then cat /usr/local/share/ca-certificates/ca-certificate.crt >> /etc/ssl/certs/ca-certificates.crt; fi
 RUN go install github.com/schemalex/schemalex/cmd/schemalex@latest
 
 # =============================================================================
@@ -144,7 +146,9 @@ RUN go install github.com/schemalex/schemalex/cmd/schemalex@latest
 # Download Atlas CLI using the official installation script
 # =============================================================================
 FROM alpine:latest AS atlas_builder
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl ca-certificates
+COPY docker/certs* /usr/local/share/ca-certificates/
+RUN if [ -f /usr/local/share/ca-certificates/ca-certificate.crt ]; then cat /usr/local/share/ca-certificates/ca-certificate.crt >> /etc/ssl/certs/ca-certificates.crt; fi
 RUN curl -sSf https://atlasgo.sh | sh
 
 # =============================================================================

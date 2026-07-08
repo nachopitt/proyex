@@ -72,7 +72,7 @@ docker compose exec workspace atlas schema diff \
 Feed the generated [database_model/diff.sql](database_model/diff.sql) file into your Artisan command:
 
 ```bash
-docker compose exec workspace php artisan migrate:import database_model/diff.sql
+docker compose exec workspace php artisan migrate:import --squash database_model/diff.sql
 ```
 
 #### 3. Clean up the Temporary Diff File
