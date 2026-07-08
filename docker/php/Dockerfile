@@ -9,6 +9,10 @@ ARG APP_VERSION=
 ENV APP_VERSION=${APP_VERSION}
 WORKDIR /var/www/html
 
+# Copy host CA certificates if they exist (optional copy)
+COPY docker/certs* /usr/local/share/ca-certificates/
+RUN if [ -f /usr/local/share/ca-certificates/ca-certificate.crt ]; then cat /usr/local/share/ca-certificates/ca-certificate.crt >> /etc/ssl/certs/ca-certificates.crt; fi
+
 # Install system dependencies shared by all stages
 RUN apk add --no-cache \
     bash \
@@ -36,6 +40,11 @@ RUN install-php-extensions pdo_mysql zip gd intl pcntl exif redis
 # =============================================================================
 FROM composer:latest AS composer_install
 WORKDIR /app
+
+# Copy host CA certificates if they exist (optional copy)
+COPY docker/certs* /usr/local/share/ca-certificates/
+RUN if [ -f /usr/local/share/ca-certificates/ca-certificate.crt ]; then cat /usr/local/share/ca-certificates/ca-certificate.crt >> /etc/ssl/certs/ca-certificates.crt; fi
+
 COPY composer.json composer.lock ./
 # Generate the autoloader here so `php artisan` can boot in frontend_build.
 # (The prod stage re-dumps an optimized autoloader once the full source is present.)
