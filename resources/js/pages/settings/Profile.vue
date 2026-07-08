@@ -55,6 +55,34 @@ const user = page.props.auth.user;
                         <InputError class="mt-2" :message="errors.name" />
                     </div>
 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="first_name">First name</Label>
+                            <Input
+                                id="first_name"
+                                class="mt-1 block w-full"
+                                name="first_name"
+                                :default-value="user.user_profile?.first_name"
+                                required
+                                placeholder="First name"
+                            />
+                            <InputError class="mt-2" :message="errors.first_name" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="last_name">Last name</Label>
+                            <Input
+                                id="last_name"
+                                class="mt-1 block w-full"
+                                name="last_name"
+                                :default-value="user.user_profile?.last_name"
+                                required
+                                placeholder="Last name"
+                            />
+                            <InputError class="mt-2" :message="errors.last_name" />
+                        </div>
+                    </div>
+
                     <div class="grid gap-2">
                         <Label for="email">Email address</Label>
                         <Input

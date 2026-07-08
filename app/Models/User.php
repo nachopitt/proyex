@@ -15,6 +15,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * The relations to eager load on every query.
+     *
+     * @var array<string>
+     */
+    protected $with = ['userProfile'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -46,6 +53,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            $user->userProfile()?->delete();
+            $user->userRoles()->delete();
+        });
     }
 
     /**

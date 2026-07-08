@@ -47,15 +47,28 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <InputError class="mt-2" :message="errors.name" />
                             </div>
 
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label for="first_name">First name</Label>
+                                    <Input id="first_name" type="text" class="mt-1 block w-full" required :tabindex="2" name="first_name" placeholder="First name" />
+                                    <InputError class="mt-2" :message="errors.first_name" />
+                                </div>
+                                <div>
+                                    <Label for="last_name">Last name</Label>
+                                    <Input id="last_name" type="text" class="mt-1 block w-full" required :tabindex="3" name="last_name" placeholder="Last name" />
+                                    <InputError class="mt-2" :message="errors.last_name" />
+                                </div>
+                            </div>
+
                             <div>
                                 <Label for="email">Email address</Label>
-                                <Input id="email" type="email" class="mt-1 block w-full" required :tabindex="2" autocomplete="email" name="email" placeholder="email@example.com" />
+                                <Input id="email" type="email" class="mt-1 block w-full" required :tabindex="4" autocomplete="email" name="email" placeholder="email@example.com" />
                                 <InputError class="mt-2" :message="errors.email" />
                             </div>
 
                             <div>
                                 <Label for="password">Password</Label>
-                                <Input id="password" type="password" class="mt-1 block w-full" required :tabindex="3" autocomplete="new-password" name="password" placeholder="Password" />
+                                <Input id="password" type="password" class="mt-1 block w-full" required :tabindex="5" autocomplete="new-password" name="password" placeholder="Password" />
                                 <InputError class="mt-2" :message="errors.password" />
                             </div>
 
@@ -66,7 +79,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     type="password"
                                     class="mt-1 block w-full"
                                     required
-                                    :tabindex="4"
+                                    :tabindex="6"
                                     autocomplete="new-password"
                                     name="password_confirmation"
                                     placeholder="Confirm password"
@@ -76,7 +89,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         </div>
 
                         <div class="flex items-center gap-4">
-                            <Button type="submit" class="mt-2" tabindex="5" :disabled="processing">
+                            <Button type="submit" class="mt-2" tabindex="7" :disabled="processing">
                                 <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                                 Create User
                             </Button>

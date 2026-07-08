@@ -24,6 +24,16 @@ export type AppPageProps<T extends Record<string, unknown> = Record<string, unkn
     sidebarOpen: boolean;
 };
 
+export interface UserProfile {
+    id: number;
+    first_name: string;
+    last_name: string;
+    active: boolean;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface User {
     id: number;
     name: string;
@@ -32,6 +42,7 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    user_profile?: UserProfile | null;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
