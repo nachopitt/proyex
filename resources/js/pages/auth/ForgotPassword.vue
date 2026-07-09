@@ -27,12 +27,12 @@ defineProps<{
             <Form v-bind="PasswordResetLinkController.store.form()" v-slot="{ errors, processing }">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
-                    <Input id="email" type="email" name="email" autocomplete="off" autofocus placeholder="email@example.com" />
+                    <Input id="email" type="email" name="email" autocomplete="off" autofocus placeholder="email@example.com" class="rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" />
                     <InputError :message="errors.email" />
                 </div>
 
                 <div class="my-6 flex items-center justify-start">
-                    <Button class="w-full" :disabled="processing">
+                    <Button class="w-full rounded-xl transition-all duration-200 active:scale-[0.98]" :disabled="processing">
                         <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                         Email password reset link
                     </Button>

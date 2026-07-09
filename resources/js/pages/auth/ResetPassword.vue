@@ -30,7 +30,7 @@ const inputEmail = ref(props.email);
             <div class="grid gap-6">
                 <div class="grid gap-2">
                     <Label for="email">Email</Label>
-                    <Input id="email" type="email" name="email" autocomplete="email" v-model="inputEmail" class="mt-1 block w-full" readonly />
+                    <Input id="email" type="email" name="email" autocomplete="email" v-model="inputEmail" class="mt-1 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" readonly />
                     <InputError :message="errors.email" class="mt-2" />
                 </div>
 
@@ -41,7 +41,7 @@ const inputEmail = ref(props.email);
                         type="password"
                         name="password"
                         autocomplete="new-password"
-                        class="mt-1 block w-full"
+                        class="mt-1 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
                         autofocus
                         placeholder="Password"
                     />
@@ -55,13 +55,13 @@ const inputEmail = ref(props.email);
                         type="password"
                         name="password_confirmation"
                         autocomplete="new-password"
-                        class="mt-1 block w-full"
+                        class="mt-1 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
                         placeholder="Confirm password"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :disabled="processing">
+                <Button type="submit" class="mt-4 w-full rounded-xl transition-all duration-200 active:scale-[0.98]" :disabled="processing">
                     <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                     Reset password
                 </Button>
