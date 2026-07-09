@@ -21,7 +21,7 @@ import { LoaderCircle } from 'lucide-vue-next';
                         id="password"
                         type="password"
                         name="password"
-                        class="mt-1 block w-full"
+                        class="mt-1 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
                         required
                         autocomplete="current-password"
                         autofocus
@@ -31,7 +31,7 @@ import { LoaderCircle } from 'lucide-vue-next';
                 </div>
 
                 <div class="flex items-center">
-                    <Button class="w-full" :disabled="processing">
+                    <Button class="w-full rounded-xl transition-all duration-200 active:scale-[0.98]" :disabled="processing">
                         <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                         Confirm Password
                     </Button>

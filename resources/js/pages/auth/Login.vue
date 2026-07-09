@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedSessionController from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
 import InputError from '@/components/InputError.vue';
+import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ defineProps<{
                         :tabindex="1"
                         autocomplete="email"
                         placeholder="email@example.com"
+                        class="rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
                     />
                     <InputError :message="errors.email" />
                 </div>
@@ -59,6 +61,7 @@ defineProps<{
                         :tabindex="2"
                         autocomplete="current-password"
                         placeholder="Password"
+                        class="rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
                     />
                     <InputError :message="errors.password" />
                 </div>
@@ -70,7 +73,7 @@ defineProps<{
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="processing">
+                <Button type="submit" class="mt-4 w-full rounded-xl transition-all duration-200 active:scale-[0.98]" :tabindex="4" :disabled="processing">
                     <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                     Log in
                 </Button>
