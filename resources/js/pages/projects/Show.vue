@@ -8,6 +8,7 @@ import { edit, index, show } from '@/routes/projects';
 import { edit as editUpdate } from '@/routes/updates';
 import { BreadcrumbItem, PaginationLink, Project, ProjectUpdate, Status } from '@/types';
 import { Link } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, Layers, MessageSquare, Tag as TagIcon, User } from 'lucide-vue-next';
 
 interface Props {
     project: Project;
@@ -34,169 +35,330 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: show(props.project.id).url,
     },
 ];
+
+// Color mapping helper for Priorities
+const getPriorityColor = (value: string) => {
+    switch (value.toLowerCase()) {
+        case 'high':
+            return 'bg-rose-500 dark:bg-rose-600';
+        case 'medium':
+            return 'bg-amber-500 dark:bg-amber-600';
+        case 'low':
+            return 'bg-emerald-500 dark:bg-emerald-600';
+        default:
+            return 'bg-neutral-500';
+    }
+};
+
+// Text color mapping helper for Priorities
+const getPriorityTextColor = (value: string) => {
+    switch (value.toLowerCase()) {
+        case 'high':
+            return 'text-rose-600 dark:text-rose-400';
+        case 'medium':
+            return 'text-amber-600 dark:text-amber-400';
+        case 'low':
+            return 'text-emerald-600 dark:text-emerald-400';
+        default:
+            return 'text-neutral-600';
+    }
+};
+
+// Color mapping helper for Statuses
+const getStatusBadgeClass = (value: string) => {
+    switch (value.toLowerCase()) {
+        case 'planned':
+            return 'bg-slate-100 text-slate-700 dark:bg-slate-900/50 dark:text-slate-300 ring-slate-500/10 dark:ring-slate-500/20';
+        case 'in-progress':
+            return 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300 ring-blue-500/10 dark:ring-blue-500/20';
+        case 'on-hold':
+            return 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 ring-amber-500/10 dark:ring-amber-500/20';
+        case 'completed':
+            return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 ring-emerald-500/10 dark:ring-emerald-500/20';
+        case 'cancelled':
+            return 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300 ring-rose-500/10 dark:ring-rose-500/20';
+        default:
+            return 'bg-neutral-50 text-neutral-600 dark:bg-neutral-900/30 dark:text-neutral-400 ring-neutral-500/10 dark:ring-neutral-500/20';
+    }
+};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div class="overflow-hidden p-6 pt-0 shadow-xl sm:rounded-lg">
-                    <div class="flex items-center justify-between">
-                        <h2 class="mt-6 mb-4 text-2xl font-bold">
-                            {{ props.project.title }}
-                        </h2>
-                        <div class="flex items-center gap-4">
-                            <Link :href="edit(props.project.id).url">
-                                <Button>Edit Project</Button>
-                            </Link>
-                        </div>
+        <div class="mx-auto max-w-7xl space-y-6 p-6 sm:px-6 lg:px-8">
+            <!-- Header/Navigation Section -->
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800">
+                <div class="flex items-center gap-3">
+                    <Link :href="index().url" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800">
+                        <ArrowLeft class="size-4" />
+                    </Link>
+                    <div>
+                        <h1 class="text-xl font-bold text-neutral-950 dark:text-neutral-50">Project Details</h1>
+                        <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">View and manage project settings</p>
                     </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <Link :href="edit(props.project.id).url">
+                        <Button class="rounded-xl">Edit Project</Button>
+                    </Link>
+                </div>
+            </div>
 
-                    <div class="mt-6 space-y-2">
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Description</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.description }}</p>
-                        </div>
-
-                        <div v-if="project.parent" class="mt-4">
-                            <h3 class="text-lg font-medium">Parent project</h3>
-                            <Link :href="show(project.parent.id).url" class="text-sm font-semibold hover:underline">
-                                {{ project.parent.title }}
-                            </Link>
-                        </div>
-
-                        <div v-if="project.children && project.children.length > 0" class="mt-4">
-                            <h3 class="text-lg font-medium">Children projects</h3>
-                            <div class="mt-6 overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                                <table class="responsive-table min-w-full divide-y divide-gray-200 bg-white">
-                                    <thead class="hidden bg-gray-50 sm:table-header-group">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                                Title
-                                            </th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                                Current Status
-                                            </th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                                Priority
-                                            </th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                                                Due Date
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="block divide-y divide-gray-200 sm:table-row-group">
-                                        <tr v-for="child in project.children" :key="child.id" class="block border-b sm:table-row sm:border-none">
-                                            <td
-                                                data-label="Title"
-                                                class="block px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:table-cell"
-                                            >
-                                                <Link :href="show(child.id).url" class="hover:underline">
-                                                    {{ child.title }}
-                                                </Link>
-                                            </td>
-                                            <td
-                                                data-label="Current Status"
-                                                class="block px-6 py-4 text-sm whitespace-nowrap text-gray-500 sm:table-cell"
-                                            >
-                                                {{ child.current_status_label }}
-                                            </td>
-                                            <td data-label="Priority" class="block px-6 py-4 text-sm whitespace-nowrap text-gray-500 sm:table-cell">
-                                                {{ child.priority_label }}
-                                            </td>
-                                            <td data-label="Due Date" class="block px-6 py-4 text-sm whitespace-nowrap text-gray-500 sm:table-cell">
-                                                {{ child.due_date }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+            <!-- Main Layout Grid -->
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <!-- Left Column (2/3 width) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Project Details Card -->
+                    <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+                        <div>
+                            <div class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                                <span v-if="project.parent" class="flex items-center gap-1.5">
+                                    <Layers class="size-3.5" />
+                                    Parent:
+                                    <Link :href="show(project.parent.id).url" class="font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                                        {{ project.parent.title }}
+                                    </Link>
+                                </span>
+                                <span v-if="project.parent" class="text-neutral-300 dark:text-neutral-700">|</span>
+                                <span>Project Details</span>
                             </div>
+                            <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
+                                {{ props.project.title }}
+                            </h2>
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Tags</h3>
-                            <div v-if="project.tags && project.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+                        <div class="border-t border-neutral-100 dark:border-neutral-800/80 pt-4">
+                            <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1">Description</h3>
+                            <p class="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 whitespace-pre-line">
+                                {{ props.project.description || 'No description provided.' }}
+                            </p>
+                        </div>
+
+                        <div v-if="project.tags && project.tags.length > 0" class="border-t border-neutral-100 dark:border-neutral-800/80 pt-4">
+                            <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-2">Tags</h3>
+                            <div class="flex flex-wrap gap-1.5">
                                 <span
                                     v-for="tag in project.tags"
                                     :key="tag.id"
-                                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset"
+                                    class="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
                                 >
+                                    <TagIcon class="size-3" />
                                     {{ tag.name }}
                                 </span>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Priority</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.priority_label }}</p>
+                    <!-- Subtasks/Children Projects Widget -->
+                    <div v-if="project.children && project.children.length > 0" class="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 overflow-hidden">
+                        <div class="border-b border-neutral-100 p-6 dark:border-neutral-800/80">
+                            <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Subtasks & Children Projects</h3>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400">Breakdown of initiatives linked to this project</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800/50">
+                                <thead class="bg-neutral-50 dark:bg-neutral-950/50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Title</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Priority</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Due Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-100 bg-white dark:divide-neutral-800/50 dark:bg-neutral-900">
+                                    <tr v-for="child in project.children" :key="child.id" class="hover:bg-neutral-50/50 dark:hover:bg-neutral-950/20 transition-colors">
+                                        <td class="px-6 py-4 text-sm font-bold text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+                                            <Link :href="show(child.id).url" class="hover:text-blue-600 dark:hover:text-blue-400">
+                                                {{ child.title }}
+                                            </Link>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm whitespace-nowrap">
+                                            <span
+                                                class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ring-1 ring-inset"
+                                                :class="getStatusBadgeClass(child.current_status_label)"
+                                            >
+                                                {{ child.current_status_label }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm whitespace-nowrap">
+                                            <span
+                                                class="inline-flex items-center gap-1.5 text-xs font-bold"
+                                                :class="getPriorityTextColor(child.priority_label)"
+                                            >
+                                                <span class="h-1.5 w-1.5 rounded-full" :class="getPriorityColor(child.priority_label)"></span>
+                                                {{ child.priority_label }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm whitespace-nowrap text-neutral-500 dark:text-neutral-400">
+                                            {{ child.due_date }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Log Progress Card -->
+                    <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                        <div class="mb-4">
+                            <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Log Progress</h3>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Record a new progress entry or update status</p>
+                        </div>
+                        <LogProgress :project="props.project" :statuses="props.statuses" />
+                    </div>
+                </div>
+
+                <!-- Right Column (1/3 width) -->
+                <div class="space-y-6">
+                    <!-- Project Overview Widget -->
+                    <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-6">
+                        <div>
+                            <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Overview</h3>
+                            <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Current status and properties</p>
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Current status</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.current_status_label }}</p>
+                        <!-- Status Badge -->
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-neutral-500 dark:text-neutral-400 font-medium">Status</span>
+                            <span
+                                class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset"
+                                :class="getStatusBadgeClass(props.project.current_status_label)"
+                            >
+                                {{ props.project.current_status_label }}
+                            </span>
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Current progress</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.current_progress_percentage }}</p>
+                        <!-- Priority Badge -->
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-neutral-500 dark:text-neutral-400 font-medium">Priority</span>
+                            <span
+                                class="inline-flex items-center gap-1.5 text-xs font-bold"
+                                :class="getPriorityTextColor(props.project.priority_label)"
+                            >
+                                <span class="h-1.5 w-1.5 rounded-full" :class="getPriorityColor(props.project.priority_label)"></span>
+                                {{ props.project.priority_label }} Priority
+                            </span>
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Start date</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.start_date }}</p>
+                        <!-- Progress Bar -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-xs font-semibold">
+                                <span class="text-neutral-500 dark:text-neutral-400 font-medium">Progress</span>
+                                <span class="text-neutral-800 dark:text-neutral-200 font-bold">{{ props.project.current_progress_percentage }}%</span>
+                            </div>
+                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                <div
+                                    class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-500"
+                                    :style="{ width: props.project.current_progress_percentage + '%' }"
+                                ></div>
+                            </div>
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Due date</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.due_date }}</p>
+                        <div class="border-t border-neutral-100 dark:border-neutral-800/80 pt-4 space-y-3">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                                    <User class="size-3.5 text-neutral-400" />
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ props.project.assigned_user?.name ?? 'Unassigned' }}</span>
+                                </span>
+                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Assigned</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                                    <User class="size-3.5 text-neutral-400 opacity-60" />
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ props.project.reporter_user.name }}</span>
+                                </span>
+                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Reporter</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                                    <Calendar class="size-3.5 text-neutral-400" />
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ props.project.start_date }}</span>
+                                </span>
+                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Start Date</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                                    <Calendar class="size-3.5 text-neutral-400" />
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300 text-amber-600 dark:text-amber-400">{{ props.project.due_date }}</span>
+                                </span>
+                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Due Date</span>
+                            </div>
+                            <div v-if="props.project.end_date" class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                                    <Calendar class="size-3.5 text-neutral-400" />
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300 text-emerald-600 dark:text-emerald-400">{{ props.project.end_date }}</span>
+                                </span>
+                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">End Date</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Updates Activity Feed Widget -->
+                    <div class="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                        <div class="flex items-center justify-between border-b border-neutral-100 p-6 dark:border-neutral-800/80">
+                            <div class="space-y-0.5">
+                                <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Project Updates</h3>
+                                <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Activity and progress history</p>
+                            </div>
+                            <MessageSquare class="size-5 text-neutral-400" />
                         </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">End date</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.end_date }}</p>
-                        </div>
+                        <div class="flex flex-1 flex-col p-6">
+                            <div v-if="props.project_updates.data.length === 0" class="flex flex-1 flex-col items-center justify-center py-12 text-center">
+                                <div class="mb-3 rounded-full bg-neutral-50 p-3 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
+                                    <MessageSquare class="size-6" />
+                                </div>
+                                <p class="text-sm font-semibold text-neutral-700 dark:text-neutral-300 font-bold">No updates yet</p>
+                                <p class="mt-1 max-w-xs text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                                    Log progress to record the first activity update.
+                                </p>
+                            </div>
 
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Reported by</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.reporter_user.name }}</p>
-                        </div>
-
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Assigned to</h3>
-                            <p class="mt-1 text-sm text-muted-foreground">{{ props.project.assigned_user?.name ?? 'Unassigned' }}</p>
-                        </div>
-
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Log Progress</h3>
-                            <LogProgress :project="props.project" :statuses="props.statuses" />
-                        </div>
-
-                        <Pagination :links="props.project_updates.links" />
-
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium">Project Updates</h3>
-                            <ul class="mt-1 space-y-4">
-                                <li
+                            <div v-else class="space-y-6">
+                                <div
                                     v-for="update in props.project_updates.data"
                                     :key="update.id"
-                                    class="rounded-lg bg-gray-50 p-4 shadow dark:bg-[#161615]"
+                                    class="relative border-l-2 border-neutral-100 pb-2 pl-6 last:border-transparent last:pb-0 dark:border-neutral-800"
                                 >
-                                    <div class="flex items-start justify-between">
-                                        <div>
-                                            <p class="text-base">{{ update.description }}</p>
-                                            <p class="mt-2 text-sm text-muted-foreground">Status: {{ update.status_label }}</p>
-                                            <p class="mt-2 text-sm text-muted-foreground">Progress: {{ update.progress_percentage }}</p>
-                                            <p class="mt-2 text-sm text-muted-foreground">Updated by: {{ update.updater_user.name }}</p>
-                                        </div>
-                                        <Link :href="editUpdate(update.id).url">
-                                            <Button variant="outline" size="sm">Edit</Button>
-                                        </Link>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                                    <!-- Timeline Dot Indicator -->
+                                    <div
+                                        class="absolute top-1.5 -left-[7px] h-3 w-3 rounded-full border-2 border-white bg-blue-500 shadow-sm dark:border-neutral-900"
+                                    ></div>
 
-                        <Pagination :links="props.project_updates.links" />
+                                    <div class="space-y-1">
+                                        <div class="flex items-center justify-between gap-1">
+                                            <span class="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                                                {{ update.updater_user.name }}
+                                            </span>
+                                            <Link :href="editUpdate(update.id).url">
+                                                <Button variant="ghost" size="sm" class="h-6 px-2 text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 text-3xs rounded-md">
+                                                    Edit
+                                                </Button>
+                                            </Link>
+                                        </div>
+
+                                        <p class="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+                                            {{ update.description }}
+                                        </p>
+
+                                        <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                                            <span class="text-neutral-500 dark:text-neutral-400 text-3xs font-medium">Status:</span>
+                                            <span
+                                                class="inline-flex items-center rounded px-1.5 py-0.5 text-3xs font-semibold ring-1 ring-inset"
+                                                :class="getStatusBadgeClass(update.status_label)"
+                                            >
+                                                {{ update.status_label }}
+                                            </span>
+                                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800"></span>
+                                            <span class="text-neutral-500 dark:text-neutral-400 text-3xs font-medium">Progress:</span>
+                                            <span class="font-bold text-neutral-800 dark:text-neutral-200 text-3xs">{{ update.progress_percentage }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Pagination :links="props.project_updates.links" class="mt-6" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -205,31 +367,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 </template>
 
 <style scoped>
-/* Responsive table styles */
-@media (max-width: 639px) {
-    /* Tailwind's 'sm' breakpoint is 640px */
-    .responsive-table td {
-        display: flex; /* Use flexbox for better alignment of label and content */
-        flex-direction: column; /* Stack label and content vertically */
-        align-items: flex-start; /* Align content to the start */
-        padding-left: 1rem; /* Ensure consistent padding */
-        padding-right: 1rem;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-        /* Removed border-bottom from td */
-    }
-
-    .responsive-table td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #6b7280; /* A slightly muted color for the label */
-        margin-bottom: 0.25rem; /* Small space between label and value */
-        width: 100%; /* Allow label to take full width */
-    }
-
-    /* The tr already has border-b, so this might not be needed or might conflict */
-    /* .responsive-table tr:last-child td {
-        border-bottom: none;
-    } */
+/* Custom extra-small font sizing */
+.text-2xs {
+    font-size: 0.65rem;
+}
+.text-3xs {
+    font-size: 0.55rem;
 }
 </style>
