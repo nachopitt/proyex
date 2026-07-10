@@ -26,3 +26,4 @@ yarn-error.log
 /.vscode
 /.zed
 database_model/proyex.mwb.bak
+/coverage

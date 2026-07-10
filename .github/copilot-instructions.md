@@ -1,9 +1,29 @@
-# Project-Specific Copilot Rules for Proyex
+# Project-Specific Agent & Copilot Rules for Proyex
 
 > [!IMPORTANT]
-> **Synchronization Notice**: When updating or modifying these rules, please make sure to keep them synchronized with the Antigravity agent rules at `.agents/AGENTS.md`.
+> **Synchronization Notice**: Keep `.agents/AGENTS.md` and `.github/copilot-instructions.md` identical at all times.
 
 This project runs inside a Docker-composed environment. All developers and Large Language Models (LLMs) **must never** execute commands like PHP, Composer, Artisan, npm, or PHPUnit directly on the host machine. Instead, always target the development docker containers (specifically `workspace`).
+
+## 🤖 AI Agent Workflow & Readiness Rules 🤖
+
+1. **Mandatory Context Bootstrapping**:
+   - At the beginning of any new task, issue, or conversation, you **MUST** execute the project readiness script:
+     `./scripts/check-agent-readiness.sh`
+   - You **MUST** read and align with the following documentation files before proposing or implementing changes:
+     - [README.md](README.md) (Local setup, database seeding baseline, and dashboard KPIs)
+     - [DATABASE_WORKFLOW.md](DATABASE_WORKFLOW.md) (MySQL schema migrations, Atlas CLI, character sets, and collation)
+     - [DEPLOYMENT.md](DEPLOYMENT.md) (Deployment lanes, staging, and production environment constraints)
+     - [.agents/AGENTS.md](.agents/AGENTS.md) / [.github/copilot-instructions.md](.github/copilot-instructions.md) (These instructions)
+   - You **MUST** review the list of 'Discovered Project Documentation Files' printed by the readiness auditor, and read any that are relevant to your current task (such as [WORKFLOW_IMPROVEMENT_PLAN.md](WORKFLOW_IMPROVEMENT_PLAN.md) or newly added guides).
+
+2. **Mandatory Testing & Coverage Alignment**:
+   - You **MUST** write corresponding tests under the `tests/` directory for any new logic, endpoints, or features you add.
+   - Before completing a task, you **MUST** run the test suite and ensure it is green:
+     `docker compose exec -T workspace php artisan test`
+   - You **MUST** run the test-coverage check to confirm test alignment:
+     `./scripts/check-test-coverage.sh`
+   - Proposing code modifications without matching test modifications will fail CI and local checks unless explicitly bypassed using target bypass mechanisms.
 
 ## ⚠️ CRITICAL COMMAND RULES ⚠️
 
