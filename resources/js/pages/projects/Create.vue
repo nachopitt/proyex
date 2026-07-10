@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { create, index, store } from '@/routes/projects';
 import { BreadcrumbItem, Priority, Project, Tag, User } from '@/types';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
 import { ref } from 'vue';
 import Multiselect from 'vue-multiselect';
