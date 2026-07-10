@@ -45,47 +45,40 @@ class DashboardTest extends TestCase
 
         $today = now()->startOfDay();
 
-        $plannedFuture = Project::factory()->create([
-            'current_status' => Status::PLANNED,
-            'parent_id' => null,
-            'due_date' => $today->copy()->addDay()->toDateString(),
-        ]);
+        $plannedFuture = Project::factory()
+            ->planned()
+            ->withDates($today->copy()->subDays(5), $today->copy()->addDay())
+            ->create(['parent_id' => null]);
 
-        Project::factory()->create([
-            'current_status' => Status::IN_PROGRESS,
-            'parent_id' => null,
-            'due_date' => $today->copy()->addDays(2)->toDateString(),
-        ]);
+        Project::factory()
+            ->inProgress()
+            ->withDates($today->copy()->subDays(5), $today->copy()->addDays(2))
+            ->create(['parent_id' => null]);
 
-        Project::factory()->create([
-            'current_status' => Status::COMPLETED,
-            'parent_id' => null,
-            'due_date' => $today->copy()->addDays(3)->toDateString(),
-        ]);
+        Project::factory()
+            ->completed()
+            ->withDates($today->copy()->subDays(10), $today->copy()->addDays(3), $today->copy()->addDays(2))
+            ->create(['parent_id' => null]);
 
-        Project::factory()->create([
-            'current_status' => Status::CANCELLED,
-            'parent_id' => null,
-            'due_date' => $today->copy()->addDays(4)->toDateString(),
-        ]);
+        Project::factory()
+            ->cancelled()
+            ->withDates($today->copy()->subDays(10), $today->copy()->addDays(4), $today->copy()->subDays(1))
+            ->create(['parent_id' => null]);
 
-        Project::factory()->create([
-            'current_status' => Status::PLANNED,
-            'parent_id' => null,
-            'due_date' => $today->copy()->subDay()->toDateString(),
-        ]);
+        Project::factory()
+            ->planned()
+            ->withDates($today->copy()->subDays(10), $today->copy()->subDay())
+            ->create(['parent_id' => null]);
 
-        Project::factory()->create([
-            'current_status' => Status::CANCELLED,
-            'parent_id' => null,
-            'due_date' => $today->copy()->subDays(2)->toDateString(),
-        ]);
+        Project::factory()
+            ->cancelled()
+            ->withDates($today->copy()->subDays(20), $today->copy()->subDays(2), $today->copy()->subDays(5))
+            ->create(['parent_id' => null]);
 
-        Project::factory()->create([
-            'current_status' => Status::PLANNED,
-            'parent_id' => $plannedFuture->id,
-            'due_date' => $today->copy()->addDays(5)->toDateString(),
-        ]);
+        Project::factory()
+            ->planned()
+            ->withDates($today->copy()->subDays(2), $today->copy()->addDays(5))
+            ->create(['parent_id' => $plannedFuture->id]);
 
         ProjectUpdate::factory()->count(6)->create();
 
