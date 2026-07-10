@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Tag;
 use App\Enums\Priority;
 use App\Enums\Status;
 use Illuminate\Database\Seeder;
@@ -35,6 +36,13 @@ class ProjectSeeder extends Seeder
         $users = User::all();
         $admin = User::where('email', env('INITIAL_ADMIN_EMAIL', 'admin@example.com'))->first() ?? $users->first();
 
+        // Seed baseline tags
+        $tagNames = ['Frontend', 'Backend', 'Design', 'Marketing', 'DevOps', 'Security', 'Database', 'QA'];
+        $tags = [];
+        foreach ($tagNames as $name) {
+            $tags[$name] = Tag::firstOrCreate(['name' => $name]);
+        }
+
         // 1. Website Redesign (In Progress, High Priority, due in 10 days)
         $p1 = Project::factory()
             ->inProgress(60)
@@ -47,6 +55,7 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p1->tags()->attach([$tags['Design']->id, $tags['Frontend']->id]);
 
         Project::factory()
             ->completed()
@@ -99,6 +108,7 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p2->tags()->attach([$tags['Backend']->id, $tags['Database']->id]);
 
         Project::factory()
             ->completed()
@@ -138,6 +148,7 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p3->tags()->attach([$tags['Marketing']->id]);
 
         Project::factory()
             ->planned()
@@ -164,6 +175,7 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p4->tags()->attach([$tags['DevOps']->id]);
 
         Project::factory()
             ->completed()
@@ -192,7 +204,7 @@ class ProjectSeeder extends Seeder
             ]);
 
         // 5. Customer Feedback Portal (Completed, Low Priority, due 2 days ago, completed 3 days ago)
-        Project::factory()
+        $p5 = Project::factory()
             ->completed()
             ->withDates(now()->subDays(25), now()->subDays(2), now()->subDays(3))
             ->withCoherentUpdates(4)
@@ -203,9 +215,10 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p5->tags()->attach([$tags['Frontend']->id, $tags['QA']->id]);
 
         // 6. Legacy Reports Cleanup (Cancelled, Low Priority, due 10 days ago, cancelled 30 days ago)
-        Project::factory()
+        $p6 = Project::factory()
             ->cancelled(10)
             ->withDates(now()->subDays(40), now()->subDays(10), now()->subDays(30))
             ->withCoherentUpdates(2)
@@ -216,9 +229,10 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p6->tags()->attach([$tags['Backend']->id, $tags['Database']->id]);
 
         // 7. HR Onboarding System (In Progress, High Priority, due in 3 days)
-        Project::factory()
+        $p7 = Project::factory()
             ->inProgress(80)
             ->withDates(now()->subDays(20), now()->addDays(3))
             ->withCoherentUpdates(3)
@@ -229,9 +243,10 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p7->tags()->attach([$tags['Frontend']->id, $tags['Backend']->id]);
 
         // 8. Data Warehouse Sync Setup (In Progress, Medium Priority, due today)
-        Project::factory()
+        $p8 = Project::factory()
             ->inProgress(50)
             ->withDates(now()->subDays(10), now())
             ->withCoherentUpdates(2)
@@ -242,9 +257,10 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p8->tags()->attach([$tags['Backend']->id, $tags['Database']->id]);
 
         // 9. Security Audit Remediations (In Progress, High Priority, due in 14 days)
-        Project::factory()
+        $p9 = Project::factory()
             ->inProgress(15)
             ->withDates(now()->subDays(2), now()->addDays(14))
             ->withCoherentUpdates(1)
@@ -255,9 +271,10 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p9->tags()->attach([$tags['Security']->id]);
 
         // 10. Developer Documentation Refactoring (Planned, Low Priority, due in 20 days)
-        Project::factory()
+        $p10 = Project::factory()
             ->planned()
             ->withDates(now()->subDays(1), now()->addDays(20))
             ->withCoherentUpdates(1)
@@ -268,9 +285,10 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p10->tags()->attach([$tags['QA']->id]);
 
         // 11. Legacy Database Migration (In Progress, High Priority, due 5 days ago) [OVERDUE ACTIVE]
-        Project::factory()
+        $p11 = Project::factory()
             ->inProgress(80)
             ->withDates(now()->subDays(30), now()->subDays(5))
             ->withCoherentUpdates(4)
@@ -281,13 +299,23 @@ class ProjectSeeder extends Seeder
                 'reporter_user_id' => $admin->id,
                 'assigned_user_id' => $users->random()->id,
             ]);
+        $p11->tags()->attach([$tags['Database']->id, $tags['Backend']->id]);
     }
 
     private function createBulkRandom(): void
     {
+        $tags = Tag::all();
+
         Project::factory()
             ->count(50)
             ->withCoherentUpdates(fake()->numberBetween(1, 5))
-            ->create();
+            ->create()
+            ->each(function (Project $project) use ($tags) {
+                if ($tags->isNotEmpty()) {
+                    $project->tags()->attach(
+                        $tags->random(fake()->numberBetween(1, 3))->pluck('id')->toArray()
+                    );
+                }
+            });
     }
 }

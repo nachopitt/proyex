@@ -107,6 +107,9 @@ class SeedValidationTest extends TestCase
             }
         }
 
+        // Assert tags are attached to projects
+        $this->assertGreaterThan(0, Project::has('tags')->count(), "Seeded projects should have tags associated with them.");
+
         // 5. Assert all Dashboard KPI cards are non-zero
         $admin = User::where('email', env('INITIAL_ADMIN_EMAIL', 'admin@example.com'))->first();
         $this->assertNotNull($admin, "Admin user must be seeded.");
