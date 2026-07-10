@@ -35,5 +35,15 @@ Route::resource('tags', TagController::class)
     ->except(['show'])
     ->middleware(['auth', 'verified']);
 
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'verified', 'admin'])
+    ->group(function () {
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+    });
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
