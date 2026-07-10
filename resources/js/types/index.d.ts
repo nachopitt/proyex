@@ -43,6 +43,7 @@ export interface User {
     created_at: string;
     updated_at: string;
     user_profile?: UserProfile | null;
+    isAdmin?: boolean;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
