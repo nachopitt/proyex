@@ -67,6 +67,18 @@ docker compose exec workspace php artisan migrate --seed
 
 Public self-registration is disabled in this project. The seeded initial admin account is the intended login path.
 
+#### Database Seeding Behavior
+By default, running `php artisan db:seed` (or migrating with `--seed`) populates a deterministic baseline dataset:
+* **Invariants & Temporal Coherence**: Ensure all records have logical timelines (`start_date <= due_date` and `end_date` is only populated for completed or cancelled states).
+* **Dashboard Alignment**: Seeds **11 top-level projects** and **8 subtasks** representing various statuses (Planned, In Progress, On Hold, Completed, Cancelled) and priorities.
+* **Workload Guarantee**: At least **5 active top-level deadlines** are due today or later, and at least **1 active project is overdue**, ensuring all dashboard KPI cards and upcoming sections are non-zero and coherent.
+* **Chronological Updates**: Generates sequentially increasing updates representing a realistic project progression.
+* **Bulk Scaling**: To append a bulk random dataset of 50 additional projects with scaling updates for load testing, set the `SEED_BULK=true` environment variable:
+  ```bash
+  docker compose exec -e SEED_BULK=true workspace php artisan db:seed
+  ```
+
+
 Then generate an app key **only if `APP_KEY` in `.env` is empty** (a fresh
 clone). If `APP_KEY=base64:...` is already set, skip this — running it would
 rotate the key and invalidate existing encrypted data/sessions:
