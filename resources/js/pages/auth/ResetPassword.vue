@@ -30,7 +30,15 @@ const inputEmail = ref(props.email);
             <div class="grid gap-6">
                 <div class="grid gap-2">
                     <Label for="email">Email</Label>
-                    <Input id="email" type="email" name="email" autocomplete="email" v-model="inputEmail" class="mt-1 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" readonly />
+                    <Input
+                        id="email"
+                        type="email"
+                        name="email"
+                        autocomplete="email"
+                        v-model="inputEmail"
+                        class="mt-1 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                        readonly
+                    />
                     <InputError :message="errors.email" class="mt-2" />
                 </div>
 

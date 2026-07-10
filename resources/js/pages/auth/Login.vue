@@ -73,7 +73,12 @@ defineProps<{
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full rounded-xl transition-all duration-200 active:scale-[0.98]" :tabindex="4" :disabled="processing">
+                <Button
+                    type="submit"
+                    class="mt-4 w-full rounded-xl transition-all duration-200 active:scale-[0.98]"
+                    :tabindex="4"
+                    :disabled="processing"
+                >
                     <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
                     Log in
                 </Button>

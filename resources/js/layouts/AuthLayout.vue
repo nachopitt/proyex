@@ -10,7 +10,9 @@ defineProps<{
 </script>
 
 <template>
-    <div class="relative flex min-h-screen flex-col items-center justify-center bg-neutral-50 px-4 py-12 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100 overflow-hidden">
+    <div
+        class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-neutral-50 px-4 py-12 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100"
+    >
         <!-- Decorative subtle background gradients matching the layout theme -->
         <div class="pointer-events-none absolute inset-0 overflow-hidden">
             <div class="absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-900/10"></div>
@@ -20,16 +22,23 @@ defineProps<{
         <main class="animate-fade-in relative z-10 w-full max-w-md space-y-6">
             <!-- Centered Logo Treatment -->
             <div class="flex flex-col items-center justify-center">
-                <Link :href="home()" class="flex flex-col items-center gap-2 group">
-                    <div class="inline-flex rounded-2xl bg-neutral-900 p-3 text-white shadow-xl shadow-neutral-900/10 transition-transform duration-300 group-hover:scale-105 dark:bg-white dark:text-neutral-950">
+                <Link :href="home()" class="group flex flex-col items-center gap-2">
+                    <div
+                        class="inline-flex rounded-2xl bg-neutral-900 p-3 text-white shadow-xl shadow-neutral-900/10 transition-transform duration-300 group-hover:scale-105 dark:bg-white dark:text-neutral-950"
+                    >
                         <AppLogoIcon class="size-6 fill-none stroke-current" />
                     </div>
-                    <span class="mt-2 text-xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-950 via-neutral-800 to-neutral-700 bg-clip-text text-transparent dark:from-white dark:via-neutral-200 dark:to-neutral-400">Proyex</span>
+                    <span
+                        class="mt-2 bg-gradient-to-r from-neutral-950 via-neutral-800 to-neutral-700 bg-clip-text text-xl font-extrabold tracking-tight text-transparent dark:from-white dark:via-neutral-200 dark:to-neutral-400"
+                        >Proyex</span
+                    >
                 </Link>
             </div>
 
             <!-- Premium Card Structure Mirroring Dashboard Cards -->
-            <div class="rounded-2xl border border-neutral-200 bg-white/80 p-8 shadow-xl shadow-neutral-950/5 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/80 dark:shadow-black/40">
+            <div
+                class="rounded-2xl border border-neutral-200 bg-white/80 p-8 shadow-xl shadow-neutral-950/5 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/80 dark:shadow-black/40"
+            >
                 <div class="mb-6 text-center">
                     <h1 class="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                         {{ title }}
