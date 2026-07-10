@@ -28,6 +28,7 @@ This project runs inside a Docker-composed environment. All developers and Large
 
 3. **Workspace Document Persistence**:
    - You **MUST** write all issue descriptions, pull request templates/descriptions, design specs, architecture documents, and implementation plans to markdown files inside the workspace root (or under `.github/issues/` for issues/PRs).
+   - When writing a Pull Request description file, you **MUST** prepend the PR Title at the top of the document (formatted as `# PR Title: <title>`).
    - Do **NOT** print these documents directly in the chat interface unless explicitly requested; instead, write them to files and provide the user with a clickable link.
    - Git commit messages are the only exception to this rule.
 
@@ -69,7 +70,7 @@ This project runs inside a Docker-composed environment. All developers and Large
 
 ## Git Commit Message Rules
 - **Conventional Commits**: All commit messages must use Conventional/Semantic commit prefixes (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`).
-- **Staged Changes Verification**: You **MUST** run `git status` or `git diff --cached --name-only` to verify exactly which files are staged before suggesting or executing a git commit message. Do not make assumptions about the index.
+- **Staged Changes Verification**: You **MUST** run `git diff --cached` to verify exactly what is staged. If staged changes exist, base the commit message **only** on the staged diff. If no staged changes exist, read the unstaged changes and base the commit message on those. Do not make assumptions about the index.
 - **50/72 Formatting Rule**:
   - The subject line (the first line) must be **50 characters or less** and start with a lowercase conventional prefix.
   - Keep a blank line between the subject and the body.
