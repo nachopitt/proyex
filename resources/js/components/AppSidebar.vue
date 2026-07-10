@@ -8,32 +8,47 @@ import { dashboard, register as registerRoute } from '@/routes';
 import * as ProjectRoutes from '@/routes/projects';
 import * as TagRoutes from '@/routes/tags';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, UserPlus } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder, LayoutGrid, ShieldAlert, UserPlus } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Projects',
-        href: ProjectRoutes.index(),
-        icon: Folder,
-    },
-    {
-        title: 'Tags',
-        href: TagRoutes.index(),
-        icon: Folder,
-    },
-    {
-        title: 'Create User',
-        href: registerRoute(),
-        icon: UserPlus,
-    },
-];
+const page = usePage();
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Projects',
+            href: ProjectRoutes.index(),
+            icon: Folder,
+        },
+        {
+            title: 'Tags',
+            href: TagRoutes.index(),
+            icon: Folder,
+        },
+        {
+            title: 'Create User',
+            href: registerRoute(),
+            icon: UserPlus,
+        },
+    ];
+
+    if (page.props.auth.user?.isAdmin) {
+        items.push({
+            title: 'Admin Panel',
+            href: '/admin/users',
+            icon: ShieldAlert,
+        });
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {

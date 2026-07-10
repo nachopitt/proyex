@@ -105,4 +105,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProjectUpdate::class, 'updater_user_id');
     }
+
+    /**
+     * Check if the user has administrative privileges.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->userRoles->contains('role', \App\Enums\Role::ADMIN);
+    }
 }
