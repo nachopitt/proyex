@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import Pagination from '@/components/ui/pagination/Pagination.vue';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { dashboard } from '@/routes';
+import { dashboard, register as registerRoute } from '@/routes';
 import { BreadcrumbItem, PaginationLink, User } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
-import { AlertCircle, Search, Shield, ShieldAlert, ShieldCheck, UserCheck, UserX } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { AlertCircle, Search, Shield, ShieldAlert, ShieldCheck, UserCheck, UserPlus, UserX } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface Props {
@@ -144,6 +145,14 @@ const toggleActive = (user: User) => {
                     </h1>
                     <p class="text-sm text-neutral-500 dark:text-neutral-400">View, search, promote/demote and activate/deactivate user accounts.</p>
                 </div>
+                <Link :href="registerRoute().url">
+                    <Button
+                        class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200"
+                    >
+                        <UserPlus class="size-4" />
+                        Create User
+                    </Button>
+                </Link>
             </div>
 
             <!-- Toast Messages -->

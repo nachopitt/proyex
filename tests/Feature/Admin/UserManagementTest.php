@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -59,6 +60,7 @@ class UserManagementTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->get(route('admin.users.index'));
         $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page->component('admin/Users'));
     }
 
     public function test_admin_can_update_user_role(): void
