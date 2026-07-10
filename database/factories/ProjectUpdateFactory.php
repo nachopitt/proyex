@@ -21,10 +21,10 @@ class ProjectUpdateFactory extends Factory
     {
         return [
             'description' => fake()->text(),
-            'status' => fake()->randomElement(Status::class),
+            'status' => fake()->randomElement(Status::cases()),
             'progress_percentage' => fake()->numberBetween(0, 100),
-            'project_id' => Project::all()->random()->id,
-            'updater_user_id' => User::all()->random()->id,
+            'project_id' => fn () => Project::inRandomOrder()->first()?->id ?? Project::factory(),
+            'updater_user_id' => fn () => User::inRandomOrder()->first()?->id ?? User::factory(),
         ];
     }
 }
