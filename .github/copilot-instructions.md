@@ -19,11 +19,17 @@ This project runs inside a Docker-composed environment. All developers and Large
 
 2. **Mandatory Testing & Coverage Alignment**:
    - You **MUST** write corresponding tests under the `tests/` directory for any new logic, endpoints, or features you add.
+   - **Testing Tip**: Ensure any unit or feature test that references Laravel facades (such as `Lang`, `Auth`, or `Config`) extends `Tests\TestCase` rather than `PHPUnit\Framework\TestCase` to prevent "A facade root has not been set" errors.
    - Before completing a task, you **MUST** run the test suite and ensure it is green:
      `docker compose exec -T workspace php artisan test`
    - You **MUST** run the test-coverage check to confirm test alignment:
      `./scripts/check-test-coverage.sh`
    - Proposing code modifications without matching test modifications will fail CI and local checks unless explicitly bypassed using target bypass mechanisms.
+
+3. **Workspace Document Persistence**:
+   - You **MUST** write all issue descriptions, pull request templates/descriptions, design specs, architecture documents, and implementation plans to markdown files inside the workspace root (or under `.github/issues/` for issues/PRs).
+   - Do **NOT** print these documents directly in the chat interface unless explicitly requested; instead, write them to files and provide the user with a clickable link.
+   - Git commit messages are the only exception to this rule.
 
 ## ⚠️ CRITICAL COMMAND RULES ⚠️
 
@@ -63,6 +69,7 @@ This project runs inside a Docker-composed environment. All developers and Large
 
 ## Git Commit Message Rules
 - **Conventional Commits**: All commit messages must use Conventional/Semantic commit prefixes (e.g., `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`).
+- **Staged Changes Verification**: You **MUST** run `git status` or `git diff --cached --name-only` to verify exactly which files are staged before suggesting or executing a git commit message. Do not make assumptions about the index.
 - **50/72 Formatting Rule**:
   - The subject line (the first line) must be **50 characters or less** and start with a lowercase conventional prefix.
   - Keep a blank line between the subject and the body.
