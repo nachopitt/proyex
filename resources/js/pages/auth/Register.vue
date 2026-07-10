@@ -43,32 +43,76 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <div class="space-y-4">
                             <div>
                                 <Label for="name">Name</Label>
-                                <Input id="name" type="text" class="mt-1 block w-full" required autofocus :tabindex="1" autocomplete="name" name="name" placeholder="Full name" />
+                                <Input
+                                    id="name"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    required
+                                    autofocus
+                                    :tabindex="1"
+                                    autocomplete="name"
+                                    name="name"
+                                    placeholder="Full name"
+                                />
                                 <InputError class="mt-2" :message="errors.name" />
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label for="first_name">First name</Label>
-                                    <Input id="first_name" type="text" class="mt-1 block w-full" required :tabindex="2" name="first_name" placeholder="First name" />
+                                    <Input
+                                        id="first_name"
+                                        type="text"
+                                        class="mt-1 block w-full"
+                                        required
+                                        :tabindex="2"
+                                        name="first_name"
+                                        placeholder="First name"
+                                    />
                                     <InputError class="mt-2" :message="errors.first_name" />
                                 </div>
                                 <div>
                                     <Label for="last_name">Last name</Label>
-                                    <Input id="last_name" type="text" class="mt-1 block w-full" required :tabindex="3" name="last_name" placeholder="Last name" />
+                                    <Input
+                                        id="last_name"
+                                        type="text"
+                                        class="mt-1 block w-full"
+                                        required
+                                        :tabindex="3"
+                                        name="last_name"
+                                        placeholder="Last name"
+                                    />
                                     <InputError class="mt-2" :message="errors.last_name" />
                                 </div>
                             </div>
 
                             <div>
                                 <Label for="email">Email address</Label>
-                                <Input id="email" type="email" class="mt-1 block w-full" required :tabindex="4" autocomplete="email" name="email" placeholder="email@example.com" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    class="mt-1 block w-full"
+                                    required
+                                    :tabindex="4"
+                                    autocomplete="email"
+                                    name="email"
+                                    placeholder="email@example.com"
+                                />
                                 <InputError class="mt-2" :message="errors.email" />
                             </div>
 
                             <div>
                                 <Label for="password">Password</Label>
-                                <Input id="password" type="password" class="mt-1 block w-full" required :tabindex="5" autocomplete="new-password" name="password" placeholder="Password" />
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    class="mt-1 block w-full"
+                                    required
+                                    :tabindex="5"
+                                    autocomplete="new-password"
+                                    name="password"
+                                    placeholder="Password"
+                                />
                                 <InputError class="mt-2" :message="errors.password" />
                             </div>
 

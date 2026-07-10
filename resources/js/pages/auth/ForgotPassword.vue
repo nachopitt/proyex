@@ -27,7 +27,15 @@ defineProps<{
             <Form v-bind="PasswordResetLinkController.store.form()" v-slot="{ errors, processing }">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
-                    <Input id="email" type="email" name="email" autocomplete="off" autofocus placeholder="email@example.com" class="rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" />
+                    <Input
+                        id="email"
+                        type="email"
+                        name="email"
+                        autocomplete="off"
+                        autofocus
+                        placeholder="email@example.com"
+                        class="rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                    />
                     <InputError :message="errors.email" />
                 </div>
 

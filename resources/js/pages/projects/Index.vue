@@ -7,8 +7,8 @@ import { dashboard } from '@/routes';
 import { create, index, show } from '@/routes/projects';
 import { BreadcrumbItem, PaginationLink, Priority, Project, Status, User } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowRight, Calendar, FolderOpen, Plus, Tag as TagIcon, User as UserIcon } from 'lucide-vue-next';
 import { debounce, pickBy } from 'lodash';
+import { ArrowRight, Calendar, FolderOpen, Plus, Tag as TagIcon, User as UserIcon } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -121,7 +121,9 @@ const getStatusBadgeClass = (value: string) => {
                     <p class="text-sm text-neutral-500 dark:text-neutral-400">Manage and track your team's workspace initiatives</p>
                 </div>
                 <Link :href="create().url">
-                    <Button class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200">
+                    <Button
+                        class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200"
+                    >
                         <Plus class="size-4" />
                         Create Project
                     </Button>
@@ -129,24 +131,40 @@ const getStatusBadgeClass = (value: string) => {
             </div>
 
             <!-- Filters Panel -->
-            <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                <div class="flex-1 min-w-[240px]">
-                    <Input v-model="search" type="text" placeholder="Search projects..." class="w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" />
+            <div
+                class="flex flex-wrap items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+            >
+                <div class="min-w-[240px] flex-1">
+                    <Input
+                        v-model="search"
+                        type="text"
+                        placeholder="Search projects..."
+                        class="w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                    />
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <select v-model="status" class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+                    <select
+                        v-model="status"
+                        class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300"
+                    >
                         <option value="">All Statuses</option>
                         <option v-for="item in statuses" :key="item.id" :value="item.id">
                             {{ item.name }}
                         </option>
                     </select>
-                    <select v-model="priority" class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+                    <select
+                        v-model="priority"
+                        class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300"
+                    >
                         <option value="">All Priorities</option>
                         <option v-for="item in priorities" :key="item.id" :value="item.id">
                             {{ item.name }}
                         </option>
                     </select>
-                    <select v-model="assignee" class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300">
+                    <select
+                        v-model="assignee"
+                        class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300"
+                    >
                         <option value="">All Assignees</option>
                         <option v-for="user in users" :key="user.id" :value="user.id">
                             {{ user.name }}
@@ -173,10 +191,7 @@ const getStatusBadgeClass = (value: string) => {
                             >
                                 {{ project.current_status_label }}
                             </span>
-                            <span
-                                class="inline-flex items-center gap-1.5 text-xs font-bold"
-                                :class="getPriorityTextColor(project.priority_label)"
-                            >
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold" :class="getPriorityTextColor(project.priority_label)">
                                 <span class="h-1.5 w-1.5 rounded-full" :class="getPriorityColor(project.priority_label)"></span>
                                 {{ project.priority_label }}
                             </span>
@@ -184,12 +199,17 @@ const getStatusBadgeClass = (value: string) => {
 
                         <div class="mt-4">
                             <h4 class="text-lg font-bold text-neutral-900 dark:text-neutral-50">
-                                <Link :href="show(project.id).url" class="group/title inline-flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400">
+                                <Link
+                                    :href="show(project.id).url"
+                                    class="group/title inline-flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400"
+                                >
                                     {{ project.title }}
-                                    <ArrowRight class="size-4 opacity-0 transition-all duration-300 group-hover/title:translate-x-0.5 group-hover/title:opacity-100" />
+                                    <ArrowRight
+                                        class="size-4 opacity-0 transition-all duration-300 group-hover/title:translate-x-0.5 group-hover/title:opacity-100"
+                                    />
                                 </Link>
                             </h4>
-                            <p class="mt-1.5 text-sm text-neutral-500 line-clamp-2 dark:text-neutral-400">
+                            <p class="mt-1.5 line-clamp-2 text-sm text-neutral-500 dark:text-neutral-400">
                                 {{ project.description }}
                             </p>
                         </div>
@@ -224,23 +244,27 @@ const getStatusBadgeClass = (value: string) => {
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <UserIcon class="size-3.5 text-neutral-400" />
-                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ project.assigned_user?.name ?? 'Unassigned' }}</span>
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{
+                                        project.assigned_user?.name ?? 'Unassigned'
+                                    }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Assigned</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Assigned</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <UserIcon class="size-3.5 text-neutral-400 opacity-60" />
                                     <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ project.reporter_user.name }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Reporter</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Reporter</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <Calendar class="size-3.5 text-neutral-400" />
-                                    <span class="font-medium text-neutral-700 dark:text-neutral-300 text-right">{{ project.start_date }} to {{ project.due_date }}</span>
+                                    <span class="text-right font-medium text-neutral-700 dark:text-neutral-300"
+                                        >{{ project.start_date }} to {{ project.due_date }}</span
+                                    >
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Timeline</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Timeline</span>
                             </div>
                         </div>
                     </div>
@@ -248,7 +272,10 @@ const getStatusBadgeClass = (value: string) => {
             </div>
 
             <!-- Empty State -->
-            <div v-else class="flex flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white py-16 text-center dark:border-neutral-800 dark:bg-neutral-900">
+            <div
+                v-else
+                class="flex flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white py-16 text-center dark:border-neutral-800 dark:bg-neutral-900"
+            >
                 <div class="mb-3 rounded-full bg-neutral-50 p-3 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
                     <FolderOpen class="size-6" />
                 </div>

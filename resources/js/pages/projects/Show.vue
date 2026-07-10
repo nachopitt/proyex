@@ -89,12 +89,15 @@ const getStatusBadgeClass = (value: string) => {
             <!-- Header/Navigation Section -->
             <div class="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800">
                 <div class="flex items-center gap-3">
-                    <Link :href="index().url" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800">
+                    <Link
+                        :href="index().url"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    >
                         <ArrowLeft class="size-4" />
                     </Link>
                     <div>
                         <h1 class="text-xl font-bold text-neutral-950 dark:text-neutral-50">Project Details</h1>
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">View and manage project settings</p>
+                        <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">View and manage project settings</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -107,9 +110,9 @@ const getStatusBadgeClass = (value: string) => {
             <!-- Main Layout Grid -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Left Column (2/3 width) -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Project Details Card -->
-                    <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-4">
+                    <div class="space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                         <div>
                             <div class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
                                 <span v-if="project.parent" class="flex items-center gap-1.5">
@@ -127,15 +130,15 @@ const getStatusBadgeClass = (value: string) => {
                             </h2>
                         </div>
 
-                        <div class="border-t border-neutral-100 dark:border-neutral-800/80 pt-4">
-                            <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-1">Description</h3>
-                            <p class="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300 whitespace-pre-line">
+                        <div class="border-t border-neutral-100 pt-4 dark:border-neutral-800/80">
+                            <h3 class="mb-1 text-sm font-bold text-neutral-900 dark:text-neutral-100">Description</h3>
+                            <p class="text-sm leading-relaxed whitespace-pre-line text-neutral-600 dark:text-neutral-300">
                                 {{ props.project.description || 'No description provided.' }}
                             </p>
                         </div>
 
-                        <div v-if="project.tags && project.tags.length > 0" class="border-t border-neutral-100 dark:border-neutral-800/80 pt-4">
-                            <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 mb-2">Tags</h3>
+                        <div v-if="project.tags && project.tags.length > 0" class="border-t border-neutral-100 pt-4 dark:border-neutral-800/80">
+                            <h3 class="mb-2 text-sm font-bold text-neutral-900 dark:text-neutral-100">Tags</h3>
                             <div class="flex flex-wrap gap-1.5">
                                 <span
                                     v-for="tag in project.tags"
@@ -150,7 +153,10 @@ const getStatusBadgeClass = (value: string) => {
                     </div>
 
                     <!-- Subtasks/Children Projects Widget -->
-                    <div v-if="project.children && project.children.length > 0" class="rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 overflow-hidden">
+                    <div
+                        v-if="project.children && project.children.length > 0"
+                        class="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                         <div class="border-b border-neutral-100 p-6 dark:border-neutral-800/80">
                             <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Subtasks & Children Projects</h3>
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">Breakdown of initiatives linked to this project</p>
@@ -159,15 +165,39 @@ const getStatusBadgeClass = (value: string) => {
                             <table class="min-w-full divide-y divide-neutral-100 dark:divide-neutral-800/50">
                                 <thead class="bg-neutral-50 dark:bg-neutral-950/50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Title</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Status</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Priority</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400">Due Date</th>
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400"
+                                        >
+                                            Title
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400"
+                                        >
+                                            Status
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400"
+                                        >
+                                            Priority
+                                        </th>
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-semibold tracking-wider text-neutral-500 uppercase dark:text-neutral-400"
+                                        >
+                                            Due Date
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-neutral-100 bg-white dark:divide-neutral-800/50 dark:bg-neutral-900">
-                                    <tr v-for="child in project.children" :key="child.id" class="hover:bg-neutral-50/50 dark:hover:bg-neutral-950/20 transition-colors">
-                                        <td class="px-6 py-4 text-sm font-bold text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
+                                    <tr
+                                        v-for="child in project.children"
+                                        :key="child.id"
+                                        class="transition-colors hover:bg-neutral-50/50 dark:hover:bg-neutral-950/20"
+                                    >
+                                        <td class="px-6 py-4 text-sm font-bold whitespace-nowrap text-neutral-900 dark:text-neutral-100">
                                             <Link :href="show(child.id).url" class="hover:text-blue-600 dark:hover:text-blue-400">
                                                 {{ child.title }}
                                             </Link>
@@ -202,7 +232,7 @@ const getStatusBadgeClass = (value: string) => {
                     <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                         <div class="mb-4">
                             <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Log Progress</h3>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Record a new progress entry or update status</p>
+                            <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Record a new progress entry or update status</p>
                         </div>
                         <LogProgress :project="props.project" :statuses="props.statuses" />
                     </div>
@@ -211,15 +241,15 @@ const getStatusBadgeClass = (value: string) => {
                 <!-- Right Column (1/3 width) -->
                 <div class="space-y-6">
                     <!-- Project Overview Widget -->
-                    <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 space-y-6">
+                    <div class="space-y-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                         <div>
                             <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Overview</h3>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Current status and properties</p>
+                            <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Current status and properties</p>
                         </div>
 
                         <!-- Status Badge -->
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-neutral-500 dark:text-neutral-400 font-medium">Status</span>
+                            <span class="font-medium text-neutral-500 dark:text-neutral-400">Status</span>
                             <span
                                 class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset"
                                 :class="getStatusBadgeClass(props.project.current_status_label)"
@@ -230,7 +260,7 @@ const getStatusBadgeClass = (value: string) => {
 
                         <!-- Priority Badge -->
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-neutral-500 dark:text-neutral-400 font-medium">Priority</span>
+                            <span class="font-medium text-neutral-500 dark:text-neutral-400">Priority</span>
                             <span
                                 class="inline-flex items-center gap-1.5 text-xs font-bold"
                                 :class="getPriorityTextColor(props.project.priority_label)"
@@ -243,8 +273,8 @@ const getStatusBadgeClass = (value: string) => {
                         <!-- Progress Bar -->
                         <div class="space-y-1.5">
                             <div class="flex items-center justify-between text-xs font-semibold">
-                                <span class="text-neutral-500 dark:text-neutral-400 font-medium">Progress</span>
-                                <span class="text-neutral-800 dark:text-neutral-200 font-bold">{{ props.project.current_progress_percentage }}%</span>
+                                <span class="font-medium text-neutral-500 dark:text-neutral-400">Progress</span>
+                                <span class="font-bold text-neutral-800 dark:text-neutral-200">{{ props.project.current_progress_percentage }}%</span>
                             </div>
                             <div class="h-2.5 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
                                 <div
@@ -254,62 +284,73 @@ const getStatusBadgeClass = (value: string) => {
                             </div>
                         </div>
 
-                        <div class="border-t border-neutral-100 dark:border-neutral-800/80 pt-4 space-y-3">
+                        <div class="space-y-3 border-t border-neutral-100 pt-4 dark:border-neutral-800/80">
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <User class="size-3.5 text-neutral-400" />
-                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ props.project.assigned_user?.name ?? 'Unassigned' }}</span>
+                                    <span class="font-medium text-neutral-700 dark:text-neutral-300">{{
+                                        props.project.assigned_user?.name ?? 'Unassigned'
+                                    }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Assigned</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Assigned</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <User class="size-3.5 text-neutral-400 opacity-60" />
                                     <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ props.project.reporter_user.name }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Reporter</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Reporter</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <Calendar class="size-3.5 text-neutral-400" />
                                     <span class="font-medium text-neutral-700 dark:text-neutral-300">{{ props.project.start_date }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Start Date</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Start Date</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <Calendar class="size-3.5 text-neutral-400" />
-                                    <span class="font-medium text-neutral-700 dark:text-neutral-300 text-amber-600 dark:text-amber-400">{{ props.project.due_date }}</span>
+                                    <span class="font-medium text-amber-600 text-neutral-700 dark:text-amber-400 dark:text-neutral-300">{{
+                                        props.project.due_date
+                                    }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">Due Date</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">Due Date</span>
                             </div>
                             <div v-if="props.project.end_date" class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
                                     <Calendar class="size-3.5 text-neutral-400" />
-                                    <span class="font-medium text-neutral-700 dark:text-neutral-300 text-emerald-600 dark:text-emerald-400">{{ props.project.end_date }}</span>
+                                    <span class="font-medium text-emerald-600 text-neutral-700 dark:text-emerald-400 dark:text-neutral-300">{{
+                                        props.project.end_date
+                                    }}</span>
                                 </span>
-                                <span class="text-neutral-400 dark:text-neutral-500 text-3xs">End Date</span>
+                                <span class="text-3xs text-neutral-400 dark:text-neutral-500">End Date</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Project Updates Activity Feed Widget -->
-                    <div class="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                    <div
+                        class="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                         <div class="flex items-center justify-between border-b border-neutral-100 p-6 dark:border-neutral-800/80">
                             <div class="space-y-0.5">
                                 <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100">Project Updates</h3>
-                                <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Activity and progress history</p>
+                                <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Activity and progress history</p>
                             </div>
                             <MessageSquare class="size-5 text-neutral-400" />
                         </div>
 
                         <div class="flex flex-1 flex-col p-6">
-                            <div v-if="props.project_updates.data.length === 0" class="flex flex-1 flex-col items-center justify-center py-12 text-center">
+                            <div
+                                v-if="props.project_updates.data.length === 0"
+                                class="flex flex-1 flex-col items-center justify-center py-12 text-center"
+                            >
                                 <div class="mb-3 rounded-full bg-neutral-50 p-3 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
                                     <MessageSquare class="size-6" />
                                 </div>
-                                <p class="text-sm font-semibold text-neutral-700 dark:text-neutral-300 font-bold">No updates yet</p>
-                                <p class="mt-1 max-w-xs text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                                <p class="text-sm font-bold font-semibold text-neutral-700 dark:text-neutral-300">No updates yet</p>
+                                <p class="mt-1 max-w-xs text-xs font-medium text-neutral-500 dark:text-neutral-400">
                                     Log progress to record the first activity update.
                                 </p>
                             </div>
@@ -331,7 +372,11 @@ const getStatusBadgeClass = (value: string) => {
                                                 {{ update.updater_user.name }}
                                             </span>
                                             <Link :href="editUpdate(update.id).url">
-                                                <Button variant="ghost" size="sm" class="h-6 px-2 text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 text-3xs rounded-md">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    class="text-3xs h-6 rounded-md px-2 text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400"
+                                                >
                                                     Edit
                                                 </Button>
                                             </Link>
@@ -342,16 +387,18 @@ const getStatusBadgeClass = (value: string) => {
                                         </p>
 
                                         <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                                            <span class="text-neutral-500 dark:text-neutral-400 text-3xs font-medium">Status:</span>
+                                            <span class="text-3xs font-medium text-neutral-500 dark:text-neutral-400">Status:</span>
                                             <span
-                                                class="inline-flex items-center rounded px-1.5 py-0.5 text-3xs font-semibold ring-1 ring-inset"
+                                                class="text-3xs inline-flex items-center rounded px-1.5 py-0.5 font-semibold ring-1 ring-inset"
                                                 :class="getStatusBadgeClass(update.status_label)"
                                             >
                                                 {{ update.status_label }}
                                             </span>
                                             <span class="inline-block h-1.5 w-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800"></span>
-                                            <span class="text-neutral-500 dark:text-neutral-400 text-3xs font-medium">Progress:</span>
-                                            <span class="font-bold text-neutral-800 dark:text-neutral-200 text-3xs">{{ update.progress_percentage }}%</span>
+                                            <span class="text-3xs font-medium text-neutral-500 dark:text-neutral-400">Progress:</span>
+                                            <span class="text-3xs font-bold text-neutral-800 dark:text-neutral-200"
+                                                >{{ update.progress_percentage }}%</span
+                                            >
                                         </div>
                                     </div>
                                 </div>

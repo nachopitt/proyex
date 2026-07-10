@@ -9,10 +9,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { create, index, store } from '@/routes/projects';
 import { BreadcrumbItem, Priority, Project, Tag, User } from '@/types';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft } from 'lucide-vue-next';
 import { ref } from 'vue';
 import Multiselect from 'vue-multiselect';
-import { ArrowLeft } from 'lucide-vue-next';
 
 interface Props {
     priorities: Priority[];
@@ -76,12 +76,15 @@ const addTag = (newTagName: string) => {
             <!-- Header Section -->
             <div class="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800">
                 <div class="flex items-center gap-3">
-                    <Link :href="index().url" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800">
+                    <Link
+                        :href="index().url"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    >
                         <ArrowLeft class="size-4" />
                     </Link>
                     <div>
                         <h1 class="text-xl font-bold text-neutral-950 dark:text-neutral-50">Create Project</h1>
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Add a new project to your workspace</p>
+                        <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Add a new project to your workspace</p>
                     </div>
                 </div>
             </div>
@@ -92,13 +95,24 @@ const addTag = (newTagName: string) => {
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div class="sm:col-span-2">
                             <Label for="title" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Title</Label>
-                            <Input id="title" type="text" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.title" required autofocus />
+                            <Input
+                                id="title"
+                                type="text"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.title"
+                                required
+                                autofocus
+                            />
                             <InputError class="mt-2" :message="form.errors.title" />
                         </div>
 
                         <div class="sm:col-span-2">
                             <Label for="description" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Description</Label>
-                            <Textarea id="description" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950 min-h-[100px]" v-model="form.description" />
+                            <Textarea
+                                id="description"
+                                class="mt-1.5 block min-h-[100px] w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.description"
+                            />
                             <InputError class="mt-2" :message="form.errors.description" />
                         </div>
 
@@ -178,18 +192,28 @@ const addTag = (newTagName: string) => {
 
                         <div>
                             <Label for="start_date" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Start Date</Label>
-                            <Input id="start_date" type="date" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.start_date" />
+                            <Input
+                                id="start_date"
+                                type="date"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.start_date"
+                            />
                             <InputError class="mt-2" :message="form.errors.start_date" />
                         </div>
 
                         <div>
                             <Label for="due_date" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Due Date</Label>
-                            <Input id="due_date" type="date" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.due_date" />
+                            <Input
+                                id="due_date"
+                                type="date"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.due_date"
+                            />
                             <InputError class="mt-2" :message="form.errors.due_date" />
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4 border-t border-neutral-100 dark:border-neutral-800/80 pt-5">
+                    <div class="flex items-center gap-4 border-t border-neutral-100 pt-5 dark:border-neutral-800/80">
                         <Button :disabled="form.processing" class="rounded-xl px-5">Create Project</Button>
                     </div>
                 </form>

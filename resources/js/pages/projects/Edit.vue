@@ -10,10 +10,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard } from '@/routes';
 import { edit, index, show, update } from '@/routes/projects';
 import { BreadcrumbItem, Priority, Project, Status, Tag, User } from '@/types';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft } from 'lucide-vue-next';
 import { ref } from 'vue';
 import Multiselect from 'vue-multiselect';
-import { ArrowLeft } from 'lucide-vue-next';
 
 interface Props {
     project: Project;
@@ -85,12 +85,15 @@ const addTag = (newTagName: string) => {
             <!-- Header Section -->
             <div class="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800">
                 <div class="flex items-center gap-3">
-                    <Link :href="show(project.id).url" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800">
+                    <Link
+                        :href="show(project.id).url"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                    >
                         <ArrowLeft class="size-4" />
                     </Link>
                     <div>
                         <h1 class="text-xl font-bold text-neutral-950 dark:text-neutral-50">Edit Project</h1>
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Update project settings and details</p>
+                        <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">Update project settings and details</p>
                     </div>
                 </div>
             </div>
@@ -101,13 +104,24 @@ const addTag = (newTagName: string) => {
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div class="sm:col-span-2">
                             <Label for="title" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Title</Label>
-                            <Input id="title" type="text" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.title" required autofocus />
+                            <Input
+                                id="title"
+                                type="text"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.title"
+                                required
+                                autofocus
+                            />
                             <InputError class="mt-2" :message="form.errors.title" />
                         </div>
 
                         <div class="sm:col-span-2">
                             <Label for="description" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Description</Label>
-                            <Textarea id="description" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950 min-h-[100px]" v-model="form.description" />
+                            <Textarea
+                                id="description"
+                                class="mt-1.5 block min-h-[100px] w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.description"
+                            />
                             <InputError class="mt-2" :message="form.errors.description" />
                         </div>
 
@@ -166,8 +180,17 @@ const addTag = (newTagName: string) => {
                         </div>
 
                         <div>
-                            <Label for="current_progress_percentage" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Progress (%)</Label>
-                            <Input id="current_progress_percentage" type="number" min="0" max="100" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.current_progress_percentage" />
+                            <Label for="current_progress_percentage" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300"
+                                >Progress (%)</Label
+                            >
+                            <Input
+                                id="current_progress_percentage"
+                                type="number"
+                                min="0"
+                                max="100"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.current_progress_percentage"
+                            />
                             <InputError class="mt-2" :message="form.errors.current_progress_percentage" />
                         </div>
 
@@ -211,30 +234,40 @@ const addTag = (newTagName: string) => {
 
                         <div>
                             <Label for="start_date" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Start Date</Label>
-                            <Input id="start_date" type="date" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.start_date" />
+                            <Input
+                                id="start_date"
+                                type="date"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.start_date"
+                            />
                             <InputError class="mt-2" :message="form.errors.start_date" />
                         </div>
 
                         <div>
                             <Label for="due_date" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Due Date</Label>
-                            <Input id="due_date" type="date" class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950" v-model="form.due_date" />
+                            <Input
+                                id="due_date"
+                                type="date"
+                                class="mt-1.5 block w-full rounded-xl border-neutral-200 dark:border-neutral-800 dark:bg-neutral-950"
+                                v-model="form.due_date"
+                            />
                             <InputError class="mt-2" :message="form.errors.due_date" />
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4 border-t border-neutral-100 dark:border-neutral-800/80 pt-5">
+                    <div class="flex items-center gap-4 border-t border-neutral-100 pt-5 dark:border-neutral-800/80">
                         <Button :disabled="form.processing" class="rounded-xl px-5">Update Project</Button>
                     </div>
                 </form>
             </div>
 
             <!-- Danger Zone Card -->
-            <div class="rounded-2xl border border-rose-200 bg-rose-50/10 p-6 shadow-sm dark:border-rose-950/30 dark:bg-rose-950/10 space-y-4">
+            <div class="space-y-4 rounded-2xl border border-rose-200 bg-rose-50/10 p-6 shadow-sm dark:border-rose-950/30 dark:bg-rose-950/10">
                 <div>
                     <h3 class="text-lg font-bold text-rose-800 dark:text-rose-400">Danger Zone</h3>
                     <p class="text-sm text-rose-600 dark:text-rose-500">Irreversible actions for this project</p>
                 </div>
-                <div class="border-t border-rose-200/50 dark:border-rose-950/50 pt-4">
+                <div class="border-t border-rose-200/50 pt-4 dark:border-rose-950/50">
                     <DeleteProject :project="project" />
                 </div>
             </div>
