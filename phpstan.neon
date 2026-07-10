@@ -1,0 +1,17 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - app/
+
+    # Level 5 is a standard, robust starting point for static analysis in Laravel.
+    level: 5
+
+    ignoreErrors:
+        # Ignore common Laravel dynamic attributes/methods if necessary
+        # - '#Static method .*::.*\(\) not found on Model.#'
+
+    excludePaths:
+        # Exclude bootstrap or other generated code if needed
