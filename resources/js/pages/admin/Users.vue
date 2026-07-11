@@ -6,7 +6,7 @@ import { dashboard, register as registerRoute } from '@/routes';
 import { BreadcrumbItem, PaginationLink, User } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useToast } from '@/composables/useToast';
-import { Search, Shield, ShieldAlert, UserCheck, UserPlus, UserX } from 'lucide-vue-next';
+import { Search, Shield, UserCheck, UserPlus, UserX } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface Props {

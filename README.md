@@ -149,7 +149,50 @@ docker compose exec workspace npm <command>
 docker compose down
 ```
 
-### 4.1 Troubleshooting
+### 4.1 Code Quality & Testing Checks
+
+Before committing or pushing any code modifications, developers should run the following validation suites to guarantee that the application remains stable and complies with quality guidelines:
+
+**1. PHP Code Style Checker (Laravel Pint):**
+Checks and automatically fixes PHP styling guidelines:
+```bash
+docker compose exec workspace ./vendor/bin/pint --test
+```
+*(Omit the `--test` flag to automatically fix any styling issues).*
+
+**2. PHP Static Analysis (Larastan/PHPStan):**
+Finds type mismatches, missing methods, or potential PHP bugs:
+```bash
+docker compose exec workspace ./vendor/bin/phpstan analyse
+```
+
+**3. Frontend Lint & Type Checks (ESLint & TypeScript):**
+Checks Vue/TypeScript source files for syntax, unused variables, and type safety:
+```bash
+docker compose exec workspace npm run lint
+docker compose exec workspace npm run typecheck
+```
+
+**4. Frontend Format Check (Prettier):**
+Checks that frontend files follow Prettier's formatting rules:
+```bash
+docker compose exec workspace npm run format:check
+```
+*(Run `docker compose exec workspace npm run format` to automatically apply formatting fixes).*
+
+**5. Test Suite Validation:**
+Runs the complete PHPUnit test suite inside the workspace container:
+```bash
+docker compose exec workspace php artisan test
+```
+
+**6. Test Alignment Check:**
+Verifies that all modified or new source files have corresponding test files:
+```bash
+./scripts/check-test-coverage.sh
+```
+
+### 4.2 Troubleshooting
 
 **App doesn't load / 404 errors**
 
@@ -190,7 +233,7 @@ docker compose up -d --build
 
 Our Docker MySQL runs internally only—no port conflict. If you see this error, a local MySQL is likely running on your host. Stop it or the error will resolve when Docker MySQL starts.
 
-### 4.2 Cleanup
+### 4.3 Cleanup
 
 **Stop containers (keep data):**
 

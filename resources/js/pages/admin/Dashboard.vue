@@ -10,13 +10,8 @@ import {
     Folder as FolderIcon,
     Tag as TagIcon,
     Server,
-    Cpu,
-    Database,
     Trash2,
-    Clock,
-    UserCheck,
     Shield,
-    Activity,
     Settings,
     RefreshCw
 } from 'lucide-vue-next';
@@ -49,7 +44,7 @@ interface Props {
     };
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 const { addToast } = useToast();
 const isClearingCache = ref(false);
 
