@@ -41,7 +41,7 @@ const user = page.props.auth.user;
                 <div class="max-w-xl space-y-6">
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
 
-                    <Form v-bind="ProfileController.update.form()" class="space-y-6" v-slot="{ errors, processing, recentlySuccessful }">
+                    <Form v-bind="ProfileController.update.form()" class="space-y-6" v-slot="{ errors, processing }">
                         <div class="grid gap-2">
                             <Label for="name" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Name</Label>
                             <Input
@@ -118,15 +118,6 @@ const user = page.props.auth.user;
 
                         <div class="flex items-center gap-4 border-t border-neutral-100 pt-5 dark:border-neutral-800/80">
                             <Button :disabled="processing" class="rounded-xl px-5">Save</Button>
-
-                            <Transition
-                                enter-active-class="transition ease-in-out"
-                                enter-from-class="opacity-0"
-                                leave-active-class="transition ease-in-out"
-                                leave-to-class="opacity-0"
-                            >
-                                <p v-show="recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
-                            </Transition>
                         </div>
                     </Form>
                 </div>

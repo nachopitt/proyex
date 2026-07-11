@@ -41,7 +41,7 @@ const currentPasswordInput = ref<HTMLInputElement | null>(null);
                         reset-on-success
                         :reset-on-error="['password', 'password_confirmation', 'current_password']"
                         class="space-y-6"
-                        v-slot="{ errors, processing, recentlySuccessful }"
+                        v-slot="{ errors, processing }"
                     >
                         <div class="grid gap-2">
                             <Label for="current_password" class="text-sm font-semibold text-neutral-700 dark:text-neutral-300"
@@ -90,15 +90,6 @@ const currentPasswordInput = ref<HTMLInputElement | null>(null);
 
                         <div class="flex items-center gap-4 border-t border-neutral-100 pt-5 dark:border-neutral-800/80">
                             <Button :disabled="processing" class="rounded-xl px-5">Save password</Button>
-
-                            <Transition
-                                enter-active-class="transition ease-in-out"
-                                enter-from-class="opacity-0"
-                                leave-active-class="transition ease-in-out"
-                                leave-to-class="opacity-0"
-                            >
-                                <p v-show="recentlySuccessful" class="text-sm text-neutral-600">Saved.</p>
-                            </Transition>
                         </div>
                     </Form>
                 </div>

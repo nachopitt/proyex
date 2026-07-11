@@ -76,6 +76,7 @@ class TagControllerTest extends TestCase
             ->post(route('tags.store'), $payload);
 
         $response->assertRedirect(route('tags.index'));
+        $response->assertSessionHas('success', 'Tag created successfully.');
         $this->assertDatabaseHas('tags', ['name' => 'new-tag']);
     }
 
@@ -107,6 +108,7 @@ class TagControllerTest extends TestCase
             ->put(route('tags.update', $tag), $payload);
 
         $response->assertRedirect(route('tags.index'));
+        $response->assertSessionHas('success', 'Tag updated successfully.');
         $this->assertDatabaseHas('tags', [
             'id' => $tag->id,
             'name' => 'modified-tag',
@@ -124,6 +126,7 @@ class TagControllerTest extends TestCase
             ->delete(route('tags.destroy', $tag));
 
         $response->assertRedirect(route('tags.index'));
+        $response->assertSessionHas('success', 'Tag deleted successfully.');
         $this->assertSoftDeleted('tags', ['id' => $tag->id]);
     }
 }

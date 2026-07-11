@@ -92,7 +92,7 @@ class ProjectController extends Controller
 
         $project->tags()->sync($tagIds);
 
-        return redirect()->route('projects.show', $project);
+        return redirect()->route('projects.show', $project)->with('success', 'Project created successfully.');
     }
 
     /**
@@ -147,7 +147,7 @@ class ProjectController extends Controller
 
         $project->tags()->sync($tagIds);
 
-        return redirect()->route('projects.show', $project);
+        return redirect()->route('projects.show', $project)->with('success', 'Project updated successfully.');
     }
 
     /**
@@ -157,6 +157,6 @@ class ProjectController extends Controller
     {
         $project->delete();
 
-        return redirect()->route('projects.index');
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
     }
 }

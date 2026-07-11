@@ -5,7 +5,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { dashboard, register as registerRoute } from '@/routes';
 import { BreadcrumbItem, PaginationLink, User } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertCircle, Search, Shield, ShieldAlert, ShieldCheck, UserCheck, UserPlus, UserX } from 'lucide-vue-next';
+import { useToast } from '@/composables/useToast';
+import { Search, Shield, ShieldAlert, UserCheck, UserPlus, UserX } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface Props {
@@ -25,8 +26,7 @@ const props = defineProps<Props>();
 const search = ref(props.filters.search || '');
 const roleFilter = ref(props.filters.role || '');
 const activeFilter = ref(props.filters.active || '');
-const errorMessage = ref('');
-const successMessage = ref('');
+const { addToast } = useToast();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -90,8 +90,6 @@ const isActive = (user: User) => {
 };
 
 const updateUserRole = (user: User, newRole: string) => {
-    errorMessage.value = '';
-    successMessage.value = '';
     router.put(
         `/admin/users/${user.id}`,
         {
@@ -100,18 +98,16 @@ const updateUserRole = (user: User, newRole: string) => {
         {
             preserveScroll: true,
             onSuccess: () => {
-                successMessage.value = 'User role updated successfully.';
+                addToast('User role updated successfully.', 'success');
             },
             onError: (errors: any) => {
-                errorMessage.value = errors.error || 'Failed to update user role.';
+                addToast(errors.error || 'Failed to update user role.', 'error');
             },
         },
     );
 };
 
 const toggleActive = (user: User) => {
-    errorMessage.value = '';
-    successMessage.value = '';
     const currentActive = isActive(user);
     router.put(
         `/admin/users/${user.id}`,
@@ -121,10 +117,10 @@ const toggleActive = (user: User) => {
         {
             preserveScroll: true,
             onSuccess: () => {
-                successMessage.value = 'User active status updated successfully.';
+                addToast('User active status updated successfully.', 'success');
             },
             onError: (errors: any) => {
-                errorMessage.value = errors.error || 'Failed to update user active status.';
+                addToast(errors.error || 'Failed to update user active status.', 'error');
             },
         },
     );
@@ -155,23 +151,7 @@ const toggleActive = (user: User) => {
                 </Link>
             </div>
 
-            <!-- Toast Messages -->
-            <div v-if="errorMessage || successMessage" class="space-y-2">
-                <div
-                    v-if="errorMessage"
-                    class="flex animate-in items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/15 px-4 py-3 text-sm text-rose-600 shadow-sm duration-300 fade-in slide-in-from-top-2 dark:text-rose-400"
-                >
-                    <AlertCircle class="size-4" />
-                    <span>{{ errorMessage }}</span>
-                </div>
-                <div
-                    v-if="successMessage"
-                    class="flex animate-in items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-4 py-3 text-sm text-emerald-600 shadow-sm duration-300 fade-in slide-in-from-top-2 dark:text-emerald-400"
-                >
-                    <ShieldCheck class="size-4" />
-                    <span>{{ successMessage }}</span>
-                </div>
-            </div>
+
 
             <!-- Filters & Search Panel -->
             <div

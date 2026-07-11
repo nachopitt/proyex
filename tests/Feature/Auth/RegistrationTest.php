@@ -45,6 +45,7 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticatedAs($admin);
         $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertSessionHas('success', 'User registered successfully.');
 
         $this->assertDatabaseHas('users', [
             'email' => 'test@example.com',

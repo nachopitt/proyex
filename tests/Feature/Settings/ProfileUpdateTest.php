@@ -36,7 +36,8 @@ class ProfileUpdateTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('profile.edit'));
+            ->assertRedirect(route('profile.edit'))
+            ->assertSessionHas('success', 'Profile updated successfully.');
 
         $user->refresh();
 
