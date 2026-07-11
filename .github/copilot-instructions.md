@@ -20,6 +20,8 @@ This project runs inside a Docker-composed environment. All developers and Large
 2. **Mandatory Testing & Coverage Alignment**:
    - You **MUST** write corresponding tests under the `tests/` directory for any new logic, endpoints, or features you add.
    - **Testing Tip**: Ensure any unit or feature test that references Laravel facades (such as `Lang`, `Auth`, or `Config`) extends `Tests\TestCase` rather than `PHPUnit\Framework\TestCase` to prevent "A facade root has not been set" errors.
+   - Before completing a task, you **MUST** run the lint checks and ensure they are clean:
+     `docker compose exec -T workspace npm run lint`
    - Before completing a task, you **MUST** run the test suite and ensure it is green:
      `docker compose exec -T workspace php artisan test`
    - You **MUST** run the test-coverage check to confirm test alignment:
