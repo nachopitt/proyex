@@ -37,7 +37,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     if (page.props.auth.user?.isAdmin) {
         items.push({
             title: 'Admin Panel',
-            href: '/admin/users',
+            href: '/admin',
             icon: ShieldAlert,
         });
     }

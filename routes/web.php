@@ -36,13 +36,18 @@ Route::resource('tags', TagController::class)
     ->middleware(['auth', 'verified']);
 
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 
 Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth', 'verified', 'admin'])
     ->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::post('actions/clear-cache', [AdminDashboardController::class, 'clearCache'])->name('actions.clear-cache');
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::get('logs', [AdminAuditLogController::class, 'index'])->name('logs.index');
     });
 
 require __DIR__.'/settings.php';

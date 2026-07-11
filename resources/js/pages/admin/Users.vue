@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Pagination from '@/components/ui/pagination/Pagination.vue';
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/AppLayout.vue';
+import AdminLayout from '@/layouts/admin/Layout.vue';
 import { dashboard, register as registerRoute } from '@/routes';
 import { BreadcrumbItem, PaginationLink, User } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -35,6 +35,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'Admin Panel',
+        href: '/admin',
+    },
+    {
+        title: 'User Management',
         href: '/admin/users',
     },
 ];
@@ -130,32 +134,15 @@ const toggleActive = (user: User) => {
 <template>
     <Head title="User Management" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="mx-auto max-w-7xl space-y-6 p-6 sm:px-6 lg:px-8">
-            <!-- Page Header -->
-            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800">
-                <div>
-                    <h1 class="flex items-center gap-2 text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-                        <ShieldAlert class="size-8 text-neutral-900 dark:text-neutral-50" />
-                        Admin Panel: Users
-                    </h1>
-                    <p class="text-sm text-neutral-500 dark:text-neutral-400">View, search, promote/demote and activate/deactivate user accounts.</p>
-                </div>
-                <Link :href="registerRoute().url">
-                    <Button
-                        class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200"
-                    >
-                        <UserPlus class="size-4" />
-                        Create User
-                    </Button>
-                </Link>
-            </div>
-
-
-
+    <AdminLayout
+        title="Admin Panel"
+        description="View, search, promote/demote and activate/deactivate user accounts."
+        :breadcrumbs="breadcrumbs"
+    >
+        <div class="space-y-6">
             <!-- Filters & Search Panel -->
             <div
-                class="flex flex-wrap items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
             >
                 <div class="relative min-w-[240px] flex-1">
                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400 dark:text-neutral-500">
@@ -168,7 +155,7 @@ const toggleActive = (user: User) => {
                         class="w-full rounded-xl border border-neutral-200 bg-white py-2 pr-4 pl-10 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
                     />
                 </div>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <select
                         v-model="roleFilter"
                         class="h-9 rounded-xl border border-neutral-200 bg-white px-3 text-sm text-neutral-700 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-300"
@@ -185,6 +172,14 @@ const toggleActive = (user: User) => {
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
                     </select>
+                    <Link :href="registerRoute().url">
+                        <Button
+                            class="inline-flex items-center gap-2 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-200 h-9 px-3 text-xs"
+                        >
+                            <UserPlus class="size-4" />
+                            Create User
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -294,7 +289,7 @@ const toggleActive = (user: User) => {
                 <Pagination :links="props.users.links" />
             </div>
         </div>
-    </AppLayout>
+    </AdminLayout>
 </template>
 
 <style scoped>
