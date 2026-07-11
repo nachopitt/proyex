@@ -70,6 +70,7 @@ class UserManagementTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionMissing('success');
         $this->assertTrue($this->regularUser->fresh()->isAdmin());
     }
 
@@ -90,6 +91,7 @@ class UserManagementTest extends TestCase
         ]);
 
         $response->assertRedirect();
+        $response->assertSessionMissing('success');
         $this->assertFalse($this->regularUser->fresh()->userProfile->active);
     }
 

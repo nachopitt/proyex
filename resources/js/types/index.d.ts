@@ -17,11 +17,20 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface FlashMessages {
+    success?: string | null;
+    error?: string | null;
+    warning?: string | null;
+    info?: string | null;
+    status?: string | null;
+}
+
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    flash: FlashMessages;
 };
 
 export interface UserProfile {

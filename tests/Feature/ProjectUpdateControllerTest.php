@@ -46,6 +46,7 @@ class ProjectUpdateControllerTest extends TestCase
             ->post(route('projects.updates.store', $project), $payload);
 
         $response->assertRedirect(route('projects.show', $project));
+        $response->assertSessionHas('success', 'Project update logged successfully.');
 
         $project->refresh();
         $this->assertEquals(Status::IN_PROGRESS, $project->current_status);
@@ -95,6 +96,7 @@ class ProjectUpdateControllerTest extends TestCase
             ->put(route('updates.update', $update), $payload);
 
         $response->assertRedirect(route('projects.show', $project));
+        $response->assertSessionHas('success', 'Project update edited successfully.');
 
         $this->assertDatabaseHas('project_updates', [
             'id' => $update->id,
@@ -116,6 +118,7 @@ class ProjectUpdateControllerTest extends TestCase
             ->delete(route('updates.destroy', $update));
 
         $response->assertRedirect(route('projects.show', $project));
+        $response->assertSessionHas('success', 'Project update deleted successfully.');
         $this->assertSoftDeleted('project_updates', ['id' => $update->id]);
     }
 }

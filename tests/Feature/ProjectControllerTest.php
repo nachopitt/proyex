@@ -90,6 +90,7 @@ class ProjectControllerTest extends TestCase
 
         $project = Project::where('title', 'New Awesome Project')->firstOrFail();
         $response->assertRedirect(route('projects.show', $project));
+        $response->assertSessionHas('success', 'Project created successfully.');
 
         // Verify tags are created and synchronized
         $this->assertDatabaseHas('tags', ['name' => 'frontend']);
@@ -157,6 +158,7 @@ class ProjectControllerTest extends TestCase
             ->put(route('projects.update', $project), $payload);
 
         $response->assertRedirect(route('projects.show', $project));
+        $response->assertSessionHas('success', 'Project updated successfully.');
 
         $this->assertDatabaseHas('projects', [
             'id' => $project->id,
@@ -180,6 +182,7 @@ class ProjectControllerTest extends TestCase
             ->delete(route('projects.destroy', $project));
 
         $response->assertRedirect(route('projects.index'));
+        $response->assertSessionHas('success', 'Project deleted successfully.');
         $this->assertSoftDeleted('projects', ['id' => $project->id]);
     }
 }

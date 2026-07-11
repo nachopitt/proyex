@@ -27,7 +27,7 @@ class ProjectUpdateController extends Controller
             'updater_user_id' => auth()->id()
         ]);
 
-        return redirect()->route('projects.show', $project);
+        return redirect()->route('projects.show', $project)->with('success', 'Project update logged successfully.');
     }
 
     /**
@@ -52,7 +52,7 @@ class ProjectUpdateController extends Controller
 
         $update->update($validated);
 
-        return redirect()->route('projects.show', $update->project_id);
+        return redirect()->route('projects.show', $update->project_id)->with('success', 'Project update edited successfully.');
     }
 
     /**
@@ -62,6 +62,6 @@ class ProjectUpdateController extends Controller
     {
         $update->delete();
 
-        return redirect()->route('projects.show', $update->project_id);
+        return redirect()->route('projects.show', $update->project_id)->with('success', 'Project update deleted successfully.');
     }
 }

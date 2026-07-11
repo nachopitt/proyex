@@ -46,7 +46,7 @@ class ProfileController extends Controller
             ]
         );
 
-        return to_route('profile.edit');
+        return to_route('profile.edit')->with('success', 'Profile updated successfully.');
     }
 
     /**
