@@ -295,6 +295,32 @@ The `web` container publishes plain HTTP on port `80`. Terminate TLS with a host
 reverse proxy in front of it — do **not** point nginx at `/opt/proyex/public`
 (there is no source on the server; the assets live inside the `web` container).
 
+#### Option A: Caddy (Recommended & Automatic HTTPS)
+
+Install Caddy on the host machine:
+```bash
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -fsSL https://dl.cloudsmith.io/public/caddy/stable/gpg.key | sudo tee /usr/share/keyrings/caddy.asc > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/caddy.asc] https://dl.cloudsmith.io/public/caddy/stable/deb/debian any-version main" | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy -y
+```
+
+Configure `/etc/caddy/Caddyfile` on the host:
+```caddy
+yourdomain.com {
+    reverse_proxy 127.0.0.1:8080
+}
+```
+
+Reload Caddy to apply:
+```bash
+sudo systemctl reload caddy
+```
+
+#### Option B: Nginx + Certbot
+
+Install Nginx and Certbot:
 ```bash
 apt install nginx certbot python3-certbot-nginx -y
 nano /etc/nginx/sites-available/proyex
@@ -329,7 +355,7 @@ server {
 
 > The `web` container publishes on `127.0.0.1:8080` (loopback only, set in
 > [docker-compose.prod.yml](docker-compose.prod.yml)) so it does **not** collide
-> with this host nginx on port 80. The host proxy listens on `80`/`443` and
+> with this host proxy on port 80. The host proxy listens on `80`/`443` and
 > forwards to `127.0.0.1:8080`. Use one TLS approach — this host proxy, **or**
 > TLS inside the `web` container — not both.
 
