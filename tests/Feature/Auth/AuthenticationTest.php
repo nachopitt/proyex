@@ -70,4 +70,21 @@ class AuthenticationTest extends TestCase
 
         $this->assertStringContainsString('Too many login attempts', $errors->first('email'));
     }
+
+    public function test_trusted_proxy_correctly_sets_https_scheme()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->withHeaders([
+            'X-Forwarded-Proto' => 'https',
+            'X-Forwarded-For' => '10.0.0.1',
+        ])->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect();
+        $this->assertStringStartsWith('https://', $response->headers->get('Location'));
+    }
 }
